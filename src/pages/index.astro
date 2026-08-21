@@ -1,0 +1,277 @@
+---
+import "../styles/global.css";
+
+const repoUrl = "https://github.com/highlyproteus/harness-harlot";
+const releaseUrl = `${repoUrl}/releases/latest`;
+const macCommand = "curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fsSL https://github.com/highlyproteus/harness-harlot/releases/latest/download/install-community-macos.sh | sh";
+const linuxCommand = "curl --proto '=https' --tlsv1.2 -fsSLo /tmp/hh-install-linux.sh https://github.com/highlyproteus/harness-harlot/releases/latest/download/install-linux.sh && sh /tmp/hh-install-linux.sh";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#090807" />
+    <meta name="description" content="Harness Harlot is a native terminal workstation for local and SSH work, with tabs, splits, groups, tmux, and embedded browser tabs." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="canonical" href="https://harnessharlot.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Harness Harlot" />
+    <meta property="og:title" content="Harness Harlot — Command everything." />
+    <meta property="og:description" content="A native terminal workstation for your local machine, SSH hosts, tmux sessions, and browser tabs." />
+    <meta property="og:url" content="https://harnessharlot.com/" />
+    <meta property="og:image" content="https://harnessharlot.com/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Harness Harlot — Command everything." />
+    <meta name="twitter:description" content="A native terminal workstation for local and SSH work." />
+    <meta name="twitter:image" content="https://harnessharlot.com/og.jpg" />
+    <title>Harness Harlot — Native terminal workstation</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Harness Harlot home">
+        <img src="/images/harness-harlot-mark.webp" alt="" width="48" height="48" />
+        <span>HARNESS HARLOT</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#workstations">Workstations</a>
+        <a href="#features">Features</a>
+        <a href="#install">Install</a>
+        <a class="nav-github" href={repoUrl}>GitHub <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> Native command center · macOS + Linux</p>
+          <img class="hero-wordmark" src="/images/harness-harlot-wordmark.webp" alt="Harness Harlot" width="1000" height="500" />
+          <h1>Your whole command line.<br /><em>One beautiful damn mess.</em></h1>
+          <p class="lede">Local shells. Remote machines. tmux sessions. Browser tabs. Keep the work alive and pull every terminal you care about into one native window.</p>
+
+          <div class="hero-actions" aria-label="Download Harness Harlot">
+            <a class="button button-primary" href={releaseUrl}>
+              <span aria-hidden="true">⌘</span> Download for macOS
+            </a>
+            <a class="button button-secondary" href={releaseUrl}>
+              <span aria-hidden="true">λ</span> Download for Linux
+            </a>
+          </div>
+
+          <p class="hero-note">Free and open source · MIT licensed · No account required</p>
+        </div>
+
+        <figure class="hero-art">
+          <img src="/images/harness-harlot-banner.webp" alt="A Victorian woman riding an armored crab through a gothic industrial city beside the Harness Harlot wordmark" width="1800" height="600" fetchpriority="high" />
+          <figcaption>Born in the terminal. Dressed for the apocalypse.</figcaption>
+        </figure>
+      </section>
+
+      <section class="intro section" id="workstations">
+        <div class="section-kicker">01 · Your machines, made tangible</div>
+        <div class="intro-grid">
+          <div>
+            <h2>What is a<br /><em>workstation?</em></h2>
+          </div>
+          <div class="intro-copy">
+            <p class="large-copy">A workstation is simply a place where you work: your Mac, your Linux box, or any machine you reach over SSH.</p>
+            <p>Each one remembers its name, color, working folder, and terminal layout. Pin the machines you live in. Open a new shell and land where you meant to be. Your SSH setup stays yours—Harness Harlot uses the keys, agents, hosts, and verification rules you already trust.</p>
+            <div class="workstation-strip" aria-label="Example workstations">
+              <span><i class="dot dot-red"></i> Local / forge</span>
+              <span><i class="dot dot-sand"></i> SSH / production</span>
+              <span><i class="dot dot-blue"></i> SSH / studio</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-showcase section" aria-labelledby="showcase-title">
+        <div class="showcase-heading">
+          <div>
+            <p class="section-kicker">02 · Native, focused, alive</p>
+            <h2 id="showcase-title">The terminal is the interface.</h2>
+          </div>
+          <p>Fast panes and persistent sessions without turning your work into a dashboard.</p>
+        </div>
+
+        <div class="app-window">
+          <div class="window-bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <b>HARNESS HARLOT</b>
+          </div>
+          <img src="/images/harness-harlot-app.png" alt="Harness Harlot showing one workstation with two split terminal panes" width="1280" height="820" loading="eager" />
+          <div class="window-tag tag-one">Split it</div>
+          <div class="window-tag tag-two">Keep it running</div>
+        </div>
+      </section>
+
+      <section class="features section" id="features">
+        <p class="section-kicker">03 · The working set</p>
+        <div class="feature-heading">
+          <h2>Built for the way<br />terminal work <em>actually happens.</em></h2>
+          <p>Move from a single command to a whole machine room without losing the thread.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card feature-card-large">
+            <span class="feature-number">A</span>
+            <h3>Terminals that survive</h3>
+            <p>Your shells keep running when the window closes, the app updates, or the desktop gets out of your way. Reopen it and pick up where you left off.</p>
+            <div class="mini-terminal" aria-hidden="true">
+              <span>$ hh version</span>
+              <b>Harness Harlot v0.1.9</b>
+              <span class="cursor">▮</span>
+            </div>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">B</span>
+            <h3>Tabs, panes, groups</h3>
+            <p>Split in any direction, drag the layout into shape, and bring several terminals—or a browser—together for one task.</p>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">C</span>
+            <h3>tmux, on your terms</h3>
+            <p>Ask for a scan, choose a session, and attach. Nothing hunts through local or remote servers in the background.</p>
+          </article>
+
+          <article class="feature-card feature-card-wide">
+            <span class="feature-number">D</span>
+            <h3>Your agents announce themselves</h3>
+            <p>Known command-line agents are recognized and labeled automatically, so a wall of busy terminals still makes sense at a glance.</p>
+            <div class="agent-list" aria-label="Supported agent command line tools">
+              <span>CODEX</span><span>CLAUDE</span><span>CURSOR</span><span>AIDER</span><span>GEMINI</span><span>+ MORE</span>
+            </div>
+          </article>
+
+          <article class="feature-card">
+            <span class="feature-number">E</span>
+            <h3>A browser in the group</h3>
+            <p>Keep the docs, preview, or console beside the terminals doing the work—inside the same native layout.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="install section" id="install">
+        <div class="install-copy">
+          <p class="section-kicker">04 · Enter the pit</p>
+          <h2>One command.<br /><em>No ceremony.</em></h2>
+          <p>Install Harness Harlot in your own user account. No account, subscription, or root access required.</p>
+          <div class="install-badges" aria-label="Available platforms">
+            <span>Apple silicon</span>
+            <span>Intel Mac</span>
+            <span>Linux x86_64</span>
+            <span>Linux arm64</span>
+          </div>
+        </div>
+
+        <div class="install-panel" data-mac-command={macCommand} data-linux-command={linuxCommand}>
+          <div class="platform-tabs" role="tablist" aria-label="Choose your platform">
+            <button class="platform-tab is-active" type="button" role="tab" aria-selected="true" data-platform="mac">macOS</button>
+            <button class="platform-tab" type="button" role="tab" aria-selected="false" data-platform="linux">Linux</button>
+          </div>
+          <div class="command-box">
+            <div class="command-heading">
+              <span>TERMINAL</span>
+              <button class="copy-button" type="button" data-copy aria-label="Copy install command">Copy</button>
+            </div>
+            <code data-command>{macCommand}</code>
+          </div>
+          <p class="copy-status" data-copy-status aria-live="polite"></p>
+          <p class="install-detail" data-install-detail>Installs the community macOS build without sudo. On first launch, macOS may ask you to confirm the app in Privacy &amp; Security.</p>
+          <a class="text-link" href={releaseUrl}>View the latest release and direct downloads <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="final-cta section">
+        <img src="/images/harness-harlot-mark.webp" alt="" width="320" height="320" loading="lazy" />
+        <div>
+          <p class="section-kicker">Open source. Sharp edges welcome.</p>
+          <h2>Command everything.</h2>
+          <p>Harness Harlot is built in public and released under the MIT license.</p>
+          <div class="final-actions">
+            <a class="button button-primary" href={releaseUrl}>Get Harness Harlot</a>
+            <a class="button button-secondary" href={repoUrl}>Explore on GitHub <span aria-hidden="true">↗</span></a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <a class="brand footer-brand" href="#top">
+        <img src="/images/harness-harlot-mark.webp" alt="" width="40" height="40" loading="lazy" />
+        <span>HARNESS HARLOT</span>
+      </a>
+      <p>Native terminal workstation for macOS + Linux.</p>
+      <div>
+        <a href={`${repoUrl}/releases`}>Releases</a>
+        <a href={`${repoUrl}/blob/main/LICENSE`}>MIT License</a>
+        <a href={repoUrl}>GitHub</a>
+      </div>
+    </footer>
+
+    <script>
+      const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-platform]"));
+      const command = document.querySelector<HTMLElement>("[data-command]");
+      const detail = document.querySelector<HTMLElement>("[data-install-detail]");
+      const copyButton = document.querySelector<HTMLButtonElement>("[data-copy]");
+      const copyStatus = document.querySelector<HTMLElement>("[data-copy-status]");
+      const installPanel = document.querySelector<HTMLElement>(".install-panel");
+
+      const platforms = {
+        mac: {
+          command: installPanel?.dataset.macCommand ?? "",
+          detail: "Installs the community macOS build without sudo. On first launch, macOS may ask you to confirm the app in Privacy & Security.",
+        },
+        linux: {
+          command: installPanel?.dataset.linuxCommand ?? "",
+          detail: "Installs under ~/.local without sudo. GitHub CLI is required so the installer can verify the release provenance.",
+        },
+      };
+
+      function selectPlatform(platform: "mac" | "linux") {
+        const selected = platforms[platform];
+        if (!selected || !command || !detail) return;
+
+        command.textContent = selected.command;
+        detail.textContent = selected.detail;
+        tabs.forEach((tab) => {
+          const active = tab.dataset.platform === platform;
+          tab.classList.toggle("is-active", active);
+          tab.setAttribute("aria-selected", String(active));
+        });
+        if (copyStatus) copyStatus.textContent = "";
+        if (copyButton) copyButton.textContent = "Copy";
+      }
+
+      tabs.forEach((tab) => tab.addEventListener("click", () => {
+        const platform = tab.dataset.platform;
+        if (platform === "mac" || platform === "linux") selectPlatform(platform);
+      }));
+
+      copyButton?.addEventListener("click", async () => {
+        const value = command?.textContent ?? "";
+        try {
+          await navigator.clipboard.writeText(value);
+          copyButton.textContent = "Copied";
+          if (copyStatus) copyStatus.textContent = "Install command copied to your clipboard.";
+        } catch {
+          const selection = window.getSelection();
+          const range = document.createRange();
+          if (command && selection) {
+            range.selectNodeContents(command);
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+          if (copyStatus) copyStatus.textContent = "Command selected. Press Command+C or Control+C to copy.";
+        }
+      });
+    </script>
+  </body>
+</html>
