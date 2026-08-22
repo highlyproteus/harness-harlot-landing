@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { assertNoRollback, validateManifest } from "./release-policy.mjs";
+import { assertNoRollback, validateManifest, verifyManifestSignature } from "./release-policy.mjs";
 
 const repository = "highlyproteus/harness-harlot";
 const requestedTag = process.argv[2];
@@ -110,8 +110,11 @@ function verifiedIndexMatchesRelease(index, platform) {
     const primary = publishedMetadata(releaseAsset(platform, architecture));
     const manifest = verifiedAsset(releaseManifest(platform, architecture));
     const signature = verifiedAsset(releaseSignature(platform, architecture));
+    const manifestBytes = readFileSync(manifest.path);
+    const manifestBody = JSON.parse(manifestBytes);
+    verifyManifestSignature(manifestBytes, readFileSync(signature.path, "utf8"), manifestBody.key_id);
     const identity = validateManifest(
-      JSON.parse(readFileSync(manifest.path, "utf8")),
+      manifestBody,
       { platform, architecture, artifact: primary, tag },
     );
     expectedBuild ??= identity.build;
@@ -176,7 +179,9 @@ try {
       const primary = verifiedAsset(releaseAsset(platform, architecture));
       const manifest = verifiedAsset(releaseManifest(platform, architecture));
       const signature = verifiedAsset(releaseSignature(platform, architecture));
-      const body = JSON.parse(readFileSync(manifest.path, "utf8"));
+      const manifestBytes = readFileSync(manifest.path);
+      const body = JSON.parse(manifestBytes);
+      verifyManifestSignature(manifestBytes, readFileSync(signature.path, "utf8"), body.key_id);
       const identity = validateManifest(body, { platform, architecture, artifact: primary, tag });
       version ??= identity.version;
       build ??= identity.build;

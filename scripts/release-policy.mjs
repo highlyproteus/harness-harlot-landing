@@ -1,6 +1,10 @@
+import { createPublicKey, verify } from "node:crypto";
 import { basename } from "node:path";
 
-const TRUSTED_KEY_IDS = new Set(["hh-stable-2026"]);
+const TRUSTED_UPDATE_PUBLIC_KEYS = new Map([
+  ["hh-stable-2026", "Cy/alHdZ5R7fSJEeuvqu1UXH9j5O0f34hWv4Rv8TFwo="],
+]);
+const TRUSTED_KEY_IDS = new Set(TRUSTED_UPDATE_PUBLIC_KEYS.keys());
 
 function requireValue(condition, message) {
   if (!condition) throw new Error(message);
@@ -49,6 +53,26 @@ export function assertNoRollback(current, candidate, { allowRollback = false } =
   }
 }
 
+export function verifyManifestSignature(
+  manifestBytes,
+  signatureBase64,
+  keyId,
+  trustedKeys = TRUSTED_UPDATE_PUBLIC_KEYS,
+) {
+  const publicKeyBase64 = trustedKeys.get(keyId);
+  requireValue(publicKeyBase64, `unknown update signing key: ${keyId}`);
+  requireValue(Buffer.isBuffer(manifestBytes), "manifest bytes are invalid");
+  requireValue(typeof signatureBase64 === "string", "manifest signature is invalid");
+  const trimmedSignature = signatureBase64.trim();
+  const signature = Buffer.from(trimmedSignature, "base64");
+  requireValue(signature.length === 64 && signature.toString("base64") === trimmedSignature, "manifest signature is not canonical base64");
+  const rawPublicKey = Buffer.from(publicKeyBase64, "base64");
+  requireValue(rawPublicKey.length === 32 && rawPublicKey.toString("base64") === publicKeyBase64, "trusted update key is invalid");
+  const spki = Buffer.concat([Buffer.from("302a300506032b6570032100", "hex"), rawPublicKey]);
+  const publicKey = createPublicKey({ key: spki, format: "der", type: "spki" });
+  requireValue(verify(null, manifestBytes, publicKey, signature), "manifest signature is not trusted");
+}
+
 export function validateManifest(body, { platform, architecture, artifact, tag, now = new Date() }) {
   requireValue(body && typeof body === "object" && !Array.isArray(body), "manifest must be an object");
   requireValue(platform === "macos" || platform === "linux", "unsupported manifest platform");
@@ -94,6 +118,10 @@ export function validateManifest(body, { platform, architecture, artifact, tag, 
     manifestArtifact.file_name === basename(new URL(artifact.url).pathname),
     "manifest filename does not match release asset",
   );
+  const canonicalFileName = platform === "macos"
+    ? `Harness-Harlot-${body.version}-b${body.build}-macos-${architecture}-community.dmg`
+    : `Harness-Harlot-${body.version}-b${body.build}-linux-${architecture}.tar.gz`;
+  requireValue(manifestArtifact.file_name === canonicalFileName, "artifact filename is not canonical for manifest identity");
   requireValue(/^[a-f0-9]{64}$/.test(manifestArtifact.sha256), "invalid artifact digest");
   requireValue(Number.isSafeInteger(manifestArtifact.size) && manifestArtifact.size > 0, "invalid artifact size");
 
