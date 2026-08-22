@@ -1,0 +1,72 @@
+import assert from "node:assert/strict";
+import { assertNoRollback, validateManifest } from "./release-policy.mjs";
+
+const now = new Date("2026-08-22T00:00:00Z");
+const dmg = {
+  url: "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/Harness-Harlot-0.1.10-b82-macos-arm64-community.dmg",
+  sha256: "a".repeat(64),
+  size: 123456,
+};
+const manifest = {
+  schema: "hh-update-manifest-v2",
+  product: "Harness Harlot",
+  channel: "stable",
+  key_id: "hh-stable-2026",
+  version: "0.1.10",
+  build: 82,
+  published_at: "2026-08-21T23:00:00Z",
+  valid_until: "2026-08-29T23:00:00Z",
+  platform: "macos",
+  minimum_macos: "13.0",
+  session_service: { protocol_version: 27, requires_quiescent_service: true },
+  artifacts: [{
+    platform: "macos",
+    architecture: "arm64",
+    format: "dmg",
+    file_name: "Harness-Harlot-0.1.10-b82-macos-arm64-community.dmg",
+    ...dmg,
+  }],
+};
+
+assert.deepEqual(validateManifest(manifest, { architecture: "arm64", dmg, tag: "v0.1.10", now }), {
+  version: "0.1.10",
+  build: 82,
+  publishedAt: "2026-08-21T23:00:00Z",
+  validUntil: "2026-08-29T23:00:00Z",
+});
+
+for (const mutate of [
+  (body) => { body.schema = "wrong"; },
+  (body) => { body.product = "Other"; },
+  (body) => { body.channel = "edge"; },
+  (body) => { body.key_id = "unknown"; },
+  (body) => { body.platform = "linux"; },
+  (body) => { body.artifacts[0].architecture = "x86_64"; },
+  (body) => { body.artifacts[0].file_name = "other.dmg"; },
+  (body) => { body.artifacts[0].size += 1; },
+  (body) => { body.artifacts.push({ ...body.artifacts[0] }); },
+  (body) => { body.valid_until = "2026-08-21T00:00:00Z"; },
+  (body) => { body.published_at = 1787353200000; },
+  (body) => { body.published_at = "2026-08-21 23:00:00"; },
+  (body) => { body.valid_until = "2026-08-29T23:00:00+00:00"; },
+  (body) => { body.published_at = "2026-02-30T23:00:00Z"; },
+]) {
+  const changed = structuredClone(manifest);
+  mutate(changed);
+  assert.throws(() => validateManifest(changed, { architecture: "arm64", dmg, tag: "v0.1.10", now }));
+}
+
+assert.doesNotThrow(() => assertNoRollback({ version: "0.1.9", build: 81 }, { version: "0.1.10", build: 82 }));
+assert.doesNotThrow(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.10", build: 82 }));
+assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.9", build: 81 }), /rollback/);
+assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.10", build: 81 }), /rollback/);
+assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.11", build: 1 }), /rollback/);
+assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.9", build: 83 }), /rollback/);
+assert.throws(() => assertNoRollback({ version: "0.1.10", build: "82" }, { version: "0.1.11", build: 83 }), /build/);
+assert.doesNotThrow(() => assertNoRollback(
+  { version: "0.1.10", build: 82 },
+  { version: "0.1.9", build: 81 },
+  { allowRollback: true },
+));
+
+console.log("release policy rejects malformed, expired, and rollback publications");
