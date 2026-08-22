@@ -13,7 +13,7 @@ assert.match(installer, /^#!\/bin\/sh\n/);
 assert.doesNotMatch(installer, /command -v gh|gh release|gh attestation/);
 assert.match(installer, /https:\/\/harnessharlot\.com\/releases\/stable-macos\.json/);
 assert.match(installer, /curl --proto '=https' --tlsv1\.2 -f/);
-assert.match(installer, /shasum -a 256 -c -/);
+assert.match(installer, /actual=\$\(shasum -a 256 "\$file"/);
 assert.doesNotMatch(installer, /Fetch the release index[\s\S]{0,160}proto-redir/);
 assert.match(page, /curl --proto '=https' --tlsv1\.2 -fsS https:\/\/harnessharlot\.com\/install \| sh/);
 assert.match(publisher, /"attestation", "verify"/);
