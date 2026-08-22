@@ -12,7 +12,7 @@ if (requestedTag) releaseArgs.push(requestedTag);
 releaseArgs.push("--repo", repository, "--json", "tagName,assets");
 const release = JSON.parse(execFileSync("gh", releaseArgs, { encoding: "utf8" }));
 const tag = release.tagName;
-if (!/^v\d+\.\d+\.\d+$/.test(tag)) throw new Error(`invalid release tag: ${tag}`);
+if (!/^v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/.test(tag)) throw new Error(`invalid release tag: ${tag}`);
 const releaseVersionPattern = tag.slice(1).replaceAll(".", "\\.");
 const assets = new Map(release.assets.map((asset) => [asset.name, asset]));
 let work;

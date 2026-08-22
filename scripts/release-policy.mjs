@@ -11,7 +11,10 @@ function requireValue(condition, message) {
 }
 
 function parseVersion(version) {
-  requireValue(typeof version === "string" && /^\d+\.\d+\.\d+$/.test(version), `invalid release version: ${version}`);
+  requireValue(
+    typeof version === "string" && /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/.test(version),
+    `invalid release version: ${version}`,
+  );
   const components = version.split(".").map(Number);
   requireValue(components.every(Number.isSafeInteger), `invalid release version: ${version}`);
   return components;

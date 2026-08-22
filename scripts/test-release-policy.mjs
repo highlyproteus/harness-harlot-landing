@@ -124,6 +124,7 @@ for (const mutate of [
 }
 
 assert.doesNotThrow(() => assertNoRollback({ version: "0.1.9", build: 81 }, { version: "0.1.10", build: 82 }));
+assert.throws(() => assertNoRollback({ version: "01.1.9", build: 81 }, { version: "0.1.10", build: 82 }), /version/);
 assert.doesNotThrow(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.10", build: 82 }));
 assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.9", build: 81 }), /rollback/);
 assert.throws(() => assertNoRollback({ version: "0.1.10", build: 82 }, { version: "0.1.10", build: 81 }), /rollback/);
