@@ -14,11 +14,17 @@ EOF
 cat > "$work/bin/curl" <<'EOF'
 #!/bin/sh
 set -eu
-[ "$1" = -fsS ]
-url=$2
-[ "$3" = -o ]
-output=$4
+[ "$1" = --max-filesize ]
+[ "$2" = 1048576 ]
+[ "$3" = -fsS ]
+url=$4
+[ "$5" = -o ]
+output=$6
 printf '%s\n' "$url" > "${HH_TEST_URL_LOG:?}"
+case ${HH_TEST_CURL_MODE:-success} in
+  fail) exit 22 ;;
+  invalid) printf '%s\n' '#!/bin/sh' 'if then' > "$output"; exit 0 ;;
+esac
 cat > "$output" <<'SCRIPT'
 #!/bin/sh
 printf '%s\n' "$*" > "${HH_TEST_ARGS_LOG:?}"
@@ -39,6 +45,19 @@ run_platform() {
 }
 run_platform Darwin https://harnessharlot.com/install-macos
 run_platform Linux https://harnessharlot.com/install-linux
+
+for mode in fail invalid; do
+  if HH_TEST_UNAME=Linux \
+     HH_TEST_CURL_MODE=$mode \
+     HH_TEST_URL_LOG="$work/$mode-url" \
+     HH_TEST_ARGS_LOG="$work/$mode-args" \
+     PATH="$work/bin:$PATH" \
+       "$repository_root/public/install" > "$work/$mode.out" 2>&1; then
+    echo "dispatcher accepted a $mode platform-installer download" >&2
+    exit 1
+  fi
+  [ ! -e "$work/$mode-args" ]
+done
 
 if HH_TEST_UNAME=FreeBSD \
    HH_TEST_URL_LOG="$work/unexpected-url" \

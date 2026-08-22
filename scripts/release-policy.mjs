@@ -79,6 +79,7 @@ export function validateManifest(body, { platform, architecture, artifact, tag, 
   const nowMs = now.getTime();
   requireValue(publishedAt <= nowMs + 5 * 60 * 1000, "manifest publication time is in the future");
   requireValue(validUntil > nowMs, "manifest is expired");
+  requireValue(validUntil >= nowMs + 2 * 60 * 60 * 1000, "manifest has insufficient remaining validity");
   requireValue(validUntil > publishedAt, "manifest expiration precedes publication");
 
   requireValue(Array.isArray(body.artifacts) && body.artifacts.length === 1, "manifest must contain exactly one artifact");

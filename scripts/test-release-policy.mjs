@@ -46,6 +46,7 @@ for (const mutate of [
   (body) => { body.artifacts[0].size += 1; },
   (body) => { body.artifacts.push({ ...body.artifacts[0] }); },
   (body) => { body.valid_until = "2026-08-21T00:00:00Z"; },
+  (body) => { body.valid_until = "2026-08-22T00:30:00Z"; },
   (body) => { body.published_at = 1787353200000; },
   (body) => { body.published_at = "2026-08-21 23:00:00"; },
   (body) => { body.valid_until = "2026-08-29T23:00:00+00:00"; },

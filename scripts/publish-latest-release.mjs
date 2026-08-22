@@ -12,6 +12,8 @@ if (requestedTag) releaseArgs.push(requestedTag);
 releaseArgs.push("--repo", repository, "--json", "tagName,assets");
 const release = JSON.parse(execFileSync("gh", releaseArgs, { encoding: "utf8" }));
 const tag = release.tagName;
+if (!/^v\d+\.\d+\.\d+$/.test(tag)) throw new Error(`invalid release tag: ${tag}`);
+const releaseVersionPattern = tag.slice(1).replaceAll(".", "\\.");
 const assets = new Map(release.assets.map((asset) => [asset.name, asset]));
 let work;
 
@@ -31,12 +33,12 @@ function publishedMetadata(asset) {
 function releaseAsset(platform, architecture) {
   if (platform === "macos") {
     return select(
-      new RegExp(`^Harness-Harlot-.*-b([0-9]+)-macos-${architecture}-community\\.dmg$`),
+      new RegExp(`^Harness-Harlot-${releaseVersionPattern}-b([0-9]+)-macos-${architecture}-community\\.dmg$`),
       `${architecture} community DMG`,
     );
   }
   return select(
-    new RegExp(`^Harness-Harlot-.*-b([0-9]+)-linux-${architecture}\\.tar\\.gz$`),
+    new RegExp(`^Harness-Harlot-${releaseVersionPattern}-b([0-9]+)-linux-${architecture}\\.tar\\.gz$`),
     `${architecture} Linux archive`,
   );
 }
@@ -191,18 +193,34 @@ try {
     }
   }
 
-  let currentIdentity;
-  try {
-    const current = JSON.parse(readFileSync("public/releases/stable-macos.json", "utf8"));
-    currentIdentity = { version: current.version, build: current.build };
-  } catch (error) {
-    if (error?.code !== "ENOENT") throw error;
+  const currentIdentities = [];
+  for (const [platform, path] of [
+    ["macos", "public/releases/stable-macos.json"],
+    ["linux", "public/releases/stable-linux.json"],
+  ]) {
+    try {
+      const current = JSON.parse(readFileSync(path, "utf8"));
+      if (current.schema !== "hh-web-release-index-v1" || !current[platform]) {
+        throw new Error(`current ${platform} release index is malformed`);
+      }
+      currentIdentities.push({ platform, version: current.version, build: current.build });
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
   }
-  assertNoRollback(
-    currentIdentity,
-    { version, build },
-    { allowRollback: process.env.HH_ALLOW_RELEASE_ROLLBACK === "1" },
-  );
+  if (currentIdentities.length === 2) {
+    const [macosCurrent, linuxCurrent] = currentIdentities;
+    if (macosCurrent.version !== linuxCurrent.version || macosCurrent.build !== linuxCurrent.build) {
+      throw new Error("current macOS and Linux release indexes disagree");
+    }
+  }
+  for (const current of currentIdentities) {
+    assertNoRollback(
+      current,
+      { version, build },
+      { allowRollback: process.env.HH_ALLOW_RELEASE_ROLLBACK === "1" },
+    );
+  }
 
   const common = { schema: "hh-web-release-index-v1", tag, version, build };
   writeFileSync(

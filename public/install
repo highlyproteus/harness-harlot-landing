@@ -14,5 +14,9 @@ work=$(mktemp -d "${TMPDIR:-/tmp}/hh-bootstrap.XXXXXX")
 cleanup() { rm -rf "$work"; }
 trap cleanup EXIT HUP INT TERM
 platform_installer="$work/install"
-curl -fsS "$installer_url" -o "$platform_installer"
+curl --max-filesize 1048576 -fsS "$installer_url" -o "$platform_installer"
+first_line=''
+IFS= read -r first_line < "$platform_installer" || true
+[ "$first_line" = '#!/bin/sh' ] || { echo "downloaded installer is not a POSIX shell script" >&2; exit 1; }
+sh -n "$platform_installer"
 sh "$platform_installer" "$@"
