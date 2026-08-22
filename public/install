@@ -277,6 +277,23 @@ preflight_app() {
     "$candidate/Contents/MacOS/hh-update-tool" prepare-community-install
 }
 
+verify_file_checksum() {
+  expected=$1
+  file=$2
+  label=$3
+  actual=$(shasum -a 256 "$file" | cut -d ' ' -f 1)
+  if [ "$actual" != "$expected" ]; then
+    echo "$label checksum mismatch" >&2
+    return 1
+  fi
+}
+
+verify_release_checksums() {
+  verify_file_checksum "$dmg_sha256" "$dmg" artifact
+  verify_file_checksum "$manifest_sha256" "$manifest" manifest
+  verify_file_checksum "$signature_sha256" "$signature" signature
+}
+
 preflight_existing_install() {
   if pgrep -x hh >/dev/null 2>&1; then
     fail "Harness Harlot is running"
@@ -307,9 +324,7 @@ run_quiet "Download the update manifest" \
   curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fL "$manifest_url" -o "$manifest"
 run_quiet "Download the update signature" \
   curl --proto '=https' --proto-redir '=https' --tlsv1.2 -fL "$signature_url" -o "$signature"
-run_quiet "Verify release checksums" sh -c '
-  printf "%s  %s\n%s  %s\n%s  %s\n" "$1" "$2" "$3" "$4" "$5" "$6" | shasum -a 256 -c -
-' sh "$dmg_sha256" "$dmg" "$manifest_sha256" "$manifest" "$signature_sha256" "$signature"
+run_quiet "Verify release checksums" verify_release_checksums
 run_quiet "Verify disk image signature" codesign --verify --strict --verbose=2 "$dmg"
 hdiutil attach -readonly -nobrowse -mountpoint "$mount" "$dmg" >/dev/null
 mounted=1
