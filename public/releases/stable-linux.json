@@ -1,46 +1,46 @@
 {
   "schema": "hh-web-release-index-v1",
-  "tag": "v0.1.10",
-  "version": "0.1.10",
-  "build": 82,
+  "tag": "v0.1.11",
+  "version": "0.1.11",
+  "build": 83,
   "linux": {
     "arm64": {
       "archive": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/Harness-Harlot-0.1.10-b82-linux-arm64.tar.gz",
-        "sha256": "5be4e4e3e387c737853bf6d5c6a9b17804d500a5d032398a9cbb088354a97b37",
-        "size": 532399462
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/Harness-Harlot-0.1.11-b83-linux-arm64.tar.gz",
+        "sha256": "288589c5bf82eba4a09f2b0408e8e2b178ffab9830ca0093965cf43e6bb7d0ec",
+        "size": 532373610
       },
       "manifest": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/manifest-linux-arm64.update.json",
-        "sha256": "b44273e445ca7af1318abb476bfaa6cbbc63bb05d09e1a15035e79a697d856ab",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/manifest-linux-arm64.update.json",
+        "sha256": "b3cdb74c2fb04b1dd5ca32e827e0e8a110bb79d3fee79e0a73b99d31e458c981",
         "size": 818
       },
       "signature": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/manifest-linux-arm64.update.json.sig",
-        "sha256": "93779f312bef87cccfb4bcfbcc5e8755619bc97e37a56bb8b279b2257a6fbdb2",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/manifest-linux-arm64.update.json.sig",
+        "sha256": "c739733c499373bb108b36cbddc332ff786ca6b4d94b9963adc5b3c75215f28c",
         "size": 89
       },
-      "manifest_published_at": "2026-08-22T08:37:53Z",
-      "manifest_valid_until": "2026-08-29T08:37:53Z"
+      "manifest_published_at": "2026-08-22T20:13:11Z",
+      "manifest_valid_until": "2026-08-29T20:13:11Z"
     },
     "x86_64": {
       "archive": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/Harness-Harlot-0.1.10-b82-linux-x86_64.tar.gz",
-        "sha256": "aeb464154b834a992dc7a8d0c4831938d54fff4d0bf0466d4dd5b18add537d42",
-        "size": 415023873
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/Harness-Harlot-0.1.11-b83-linux-x86_64.tar.gz",
+        "sha256": "dad53d11b59dcb774e1e04e389850b9e960c42bff060395744e304d47bbc49c6",
+        "size": 415039401
       },
       "manifest": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/manifest-linux-x86_64.update.json",
-        "sha256": "ce5c287ddfa0bf780d97b047a2bfdb0edc895246539e6dcb335d4f1781c4920a",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/manifest-linux-x86_64.update.json",
+        "sha256": "bf99dce666023402f0fc71dce1921f42cebd2cb54a776105e55e0f702a9fa4bf",
         "size": 821
       },
       "signature": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/manifest-linux-x86_64.update.json.sig",
-        "sha256": "d802683df21fcf669d66a85e3f7aa5b28907a3e285f85a3de7642c4044e6a82c",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.11/manifest-linux-x86_64.update.json.sig",
+        "sha256": "44fe072a8383be453e30bd12020b1a7dead902a52ba9ae68e085a46721a85712",
         "size": 89
       },
-      "manifest_published_at": "2026-08-22T08:40:09Z",
-      "manifest_valid_until": "2026-08-29T08:40:09Z"
+      "manifest_published_at": "2026-08-22T20:15:33Z",
+      "manifest_valid_until": "2026-08-29T20:15:33Z"
     }
   }
 }
