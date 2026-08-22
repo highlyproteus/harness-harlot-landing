@@ -34,6 +34,9 @@ assert.match(releaseIndex.version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
 for (const architecture of ["arm64", "x86_64"]) {
   const item = releaseIndex.macos[architecture];
   assert.ok(item, `missing ${architecture} release`);
+  assert.match(item.manifest_published_at, /^\d{4}-\d{2}-\d{2}T/);
+  assert.match(item.manifest_valid_until, /^\d{4}-\d{2}-\d{2}T/);
+  assert.ok(Date.parse(item.manifest_valid_until) > Date.now(), `${architecture} manifest must remain valid`);
   for (const asset of [item.dmg, item.manifest, item.signature]) {
     assert.match(asset.url, /^https:\/\/github\.com\/highlyproteus\/harness-harlot\/releases\/download\//);
     assert.match(asset.sha256, /^[a-f0-9]{64}$/);

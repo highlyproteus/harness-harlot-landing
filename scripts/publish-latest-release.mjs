@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
+import { assertNoRollback, validateManifest } from "./release-policy.mjs";
 
 const repository = "highlyproteus/harness-harlot";
 const requestedTag = process.argv[2];
@@ -36,12 +37,17 @@ function publicationMatchesRelease() {
       const buildMatch = /-b([0-9]+)-macos-/.exec(dmg.name);
       expectedBuild ??= Number(buildMatch[1]);
       if (expectedBuild !== Number(buildMatch[1])) return false;
-      const expected = {
+      const expectedAssets = {
         dmg: publishedMetadata(dmg),
         manifest: publishedMetadata(select(new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json$`), `${architecture} stable manifest`)),
         signature: publishedMetadata(select(new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json\\.sig$`), `${architecture} stable signature`)),
       };
-      if (JSON.stringify(current.macos?.[architecture]) !== JSON.stringify(expected)) return false;
+      const currentArchitecture = current.macos?.[architecture];
+      for (const kind of ["dmg", "manifest", "signature"]) {
+        if (JSON.stringify(currentArchitecture?.[kind]) !== JSON.stringify(expectedAssets[kind])) return false;
+      }
+      if (!Number.isFinite(Date.parse(currentArchitecture?.manifest_valid_until))) return false;
+      if (Date.parse(currentArchitecture.manifest_valid_until) <= Date.now()) return false;
     }
     if (current.build !== expectedBuild) return false;
     const installerAsset = select(/^install-community-macos\.sh$/, "macOS installer");
@@ -107,19 +113,33 @@ try {
       `${architecture} stable signature`,
     ));
     const body = JSON.parse(readFileSync(manifest.path, "utf8"));
-    if (body.artifacts?.[0]?.sha256 !== dmg.sha256) throw new Error(`${architecture} manifest does not match DMG`);
-    if (body.artifacts?.[0]?.url !== dmg.url) throw new Error(`${architecture} manifest URL does not match release asset`);
-    version ??= body.version;
-    build ??= body.build;
-    if (body.version !== version || body.build !== build || tag !== `v${body.version}`) {
+    const identity = validateManifest(body, { architecture, dmg, tag });
+    version ??= identity.version;
+    build ??= identity.build;
+    if (identity.version !== version || identity.build !== build) {
       throw new Error("release tag, version, or build disagree across architectures");
     }
     macos[architecture] = {
       dmg: publicAsset(dmg),
       manifest: publicAsset(manifest),
       signature: publicAsset(signature),
+      manifest_published_at: identity.publishedAt,
+      manifest_valid_until: identity.validUntil,
     };
   }
+
+  let currentIdentity;
+  try {
+    const current = JSON.parse(readFileSync("public/releases/stable-macos.json", "utf8"));
+    currentIdentity = { version: current.version, build: current.build };
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  assertNoRollback(
+    currentIdentity,
+    { version, build },
+    { allowRollback: process.env.HH_ALLOW_RELEASE_ROLLBACK === "1" },
+  );
 
   const index = { schema: "hh-web-release-index-v1", tag, version, build, macos };
   writeFileSync("public/releases/stable-macos.json", `${JSON.stringify(index, null, 2)}\n`);
