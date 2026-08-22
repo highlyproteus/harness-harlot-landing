@@ -41,6 +41,8 @@ assert.match(workflow, /upload-artifact@/);
 assert.match(workflow, /download-artifact@/);
 assert.match(publisher, /--signer-workflow/);
 assert.match(publisher, /--source-ref/);
+assert.equal((publisher.match(/verifyManifestSignature\(/g) ?? []).length, 2);
+assert.match(publisher, /current macOS and Linux release indexes disagree/);
 const verifiedAssetOffset = publisher.indexOf("function verifiedAsset");
 const verifiedNoOpOffset = publisher.indexOf("verifiedPublicationMatchesRelease()");
 assert.ok(verifiedAssetOffset >= 0 && verifiedNoOpOffset > verifiedAssetOffset, "no-op must run only after attestation verification is available");
