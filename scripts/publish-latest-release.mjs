@@ -24,47 +24,47 @@ function select(pattern, label) {
 function publishedMetadata(asset) {
   const match = /^sha256:([a-f0-9]{64})$/.exec(asset.digest ?? "");
   if (!match) throw new Error(`release asset has no valid SHA-256 digest: ${asset.name}`);
+  if (!Number.isSafeInteger(asset.size) || asset.size <= 0) throw new Error(`release asset has invalid size: ${asset.name}`);
   return { url: asset.url, sha256: match[1], size: asset.size };
 }
 
-function publicationMatchesRelease() {
-  try {
-    const current = JSON.parse(readFileSync("public/releases/stable-macos.json", "utf8"));
-    if (current.schema !== "hh-web-release-index-v1" || current.tag !== tag || current.version !== tag.slice(1)) return false;
-    let expectedBuild;
-    for (const architecture of ["arm64", "x86_64"]) {
-      const dmg = select(new RegExp(`^Harness-Harlot-.*-b([0-9]+)-macos-${architecture}-community\\.dmg$`), `${architecture} community DMG`);
-      const buildMatch = /-b([0-9]+)-macos-/.exec(dmg.name);
-      expectedBuild ??= Number(buildMatch[1]);
-      if (expectedBuild !== Number(buildMatch[1])) return false;
-      const expectedAssets = {
-        dmg: publishedMetadata(dmg),
-        manifest: publishedMetadata(select(new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json$`), `${architecture} stable manifest`)),
-        signature: publishedMetadata(select(new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json\\.sig$`), `${architecture} stable signature`)),
-      };
-      const currentArchitecture = current.macos?.[architecture];
-      for (const kind of ["dmg", "manifest", "signature"]) {
-        if (JSON.stringify(currentArchitecture?.[kind]) !== JSON.stringify(expectedAssets[kind])) return false;
-      }
-      if (!Number.isFinite(Date.parse(currentArchitecture?.manifest_valid_until))) return false;
-      if (Date.parse(currentArchitecture.manifest_valid_until) <= Date.now()) return false;
-    }
-    if (current.build !== expectedBuild) return false;
-    const installerAsset = select(/^install-community-macos\.sh$/, "macOS installer");
-    const installerSha = createHash("sha256").update(readFileSync("public/install")).digest("hex");
-    return installerAsset.digest === `sha256:${installerSha}`;
-  } catch {
-    return false;
+function releaseAsset(platform, architecture) {
+  if (platform === "macos") {
+    return select(
+      new RegExp(`^Harness-Harlot-.*-b([0-9]+)-macos-${architecture}-community\\.dmg$`),
+      `${architecture} community DMG`,
+    );
   }
+  return select(
+    new RegExp(`^Harness-Harlot-.*-b([0-9]+)-linux-${architecture}\\.tar\\.gz$`),
+    `${architecture} Linux archive`,
+  );
 }
 
-if (!requestedTag && publicationMatchesRelease()) {
-  console.log(`website already publishes verified ${tag} assets`);
-  process.exit(0);
+function releaseManifest(platform, architecture) {
+  return select(
+    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}\\.update\\.json$`),
+    `${platform} ${architecture} stable manifest`,
+  );
 }
+
+function releaseSignature(platform, architecture) {
+  return select(
+    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}\\.update\\.json\\.sig$`),
+    `${platform} ${architecture} stable signature`,
+  );
+}
+
+function localFileMatchesVerifiedAsset(path, verified) {
+  const sha256 = createHash("sha256").update(readFileSync(path)).digest("hex");
+  return verified.sha256 === sha256;
+}
+
 work = mkdtempSync(join(tmpdir(), "hh-release-index-"));
+const verifiedAssets = new Map();
 
 function verifiedAsset(asset) {
+  if (verifiedAssets.has(asset.name)) return verifiedAssets.get(asset.name);
   execFileSync("gh", ["release", "download", tag, "--repo", repository, "--dir", work, "--pattern", asset.name], { stdio: "inherit" });
   const path = join(work, asset.name);
   execFileSync("gh", [
@@ -78,7 +78,9 @@ function verifiedAsset(asset) {
   if (asset.digest && asset.digest !== `sha256:${sha256}`) {
     throw new Error(`GitHub digest mismatch for ${asset.name}`);
   }
-  return { path, url: asset.url, sha256, size: asset.size };
+  const verified = { path, url: asset.url, sha256, size: asset.size };
+  verifiedAssets.set(asset.name, verified);
+  return verified;
 }
 
 function publicAsset(asset) {
@@ -86,46 +88,107 @@ function publicAsset(asset) {
   return published;
 }
 
-try {
-  const installer = verifiedAsset(select(/^install-community-macos\.sh$/, "macOS installer"));
-  const installerBody = readFileSync(installer.path, "utf8");
-  if (!installerBody.startsWith("#!/bin/sh\n")) throw new Error("installer is not a POSIX shell script");
-  if (/command -v gh|gh release|gh attestation/.test(installerBody)) throw new Error("release installer still requires gh");
-  if (!installerBody.includes("https://harnessharlot.com/releases/stable-macos.json")) {
-    throw new Error("release installer does not trust the website release index");
+function validateInstaller(installer, platform, indexUrl) {
+  const body = readFileSync(installer.path, "utf8");
+  if (!body.startsWith("#!/bin/sh\n")) throw new Error(`${platform} installer is not a POSIX shell script`);
+  if (/command -v gh|gh release|gh attestation/.test(body)) throw new Error(`${platform} release installer still requires gh`);
+  if (/--tag/.test(body)) throw new Error(`${platform} release installer still advertises historical tags`);
+  if (!body.includes(indexUrl)) throw new Error(`${platform} release installer does not trust the website release index`);
+  if (!body.includes("curl -fsS https://harnessharlot.com/install | sh")) {
+    throw new Error(`${platform} release installer does not advertise the universal command`);
   }
   execFileSync("sh", ["-n", installer.path]);
+  return body;
+}
 
-  const macos = {};
-  let version;
-  let build;
+function verifiedIndexMatchesRelease(index, platform) {
+  if (index.schema !== "hh-web-release-index-v1" || index.tag !== tag || index.version !== tag.slice(1)) return false;
+  let expectedBuild;
   for (const architecture of ["arm64", "x86_64"]) {
-    const dmg = verifiedAsset(select(
-      new RegExp(`^Harness-Harlot-.*-macos-${architecture}-community\\.dmg$`),
-      `${architecture} community DMG`,
-    ));
-    const manifest = verifiedAsset(select(
-      new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json$`),
-      `${architecture} stable manifest`,
-    ));
-    const signature = verifiedAsset(select(
-      new RegExp(`^manifest-macos-community-${architecture}\\.update\\.json\\.sig$`),
-      `${architecture} stable signature`,
-    ));
-    const body = JSON.parse(readFileSync(manifest.path, "utf8"));
-    const identity = validateManifest(body, { architecture, dmg, tag });
-    version ??= identity.version;
-    build ??= identity.build;
-    if (identity.version !== version || identity.build !== build) {
-      throw new Error("release tag, version, or build disagree across architectures");
-    }
-    macos[architecture] = {
-      dmg: publicAsset(dmg),
+    const primary = publishedMetadata(releaseAsset(platform, architecture));
+    const manifest = verifiedAsset(releaseManifest(platform, architecture));
+    const signature = verifiedAsset(releaseSignature(platform, architecture));
+    const identity = validateManifest(
+      JSON.parse(readFileSync(manifest.path, "utf8")),
+      { platform, architecture, artifact: primary, tag },
+    );
+    expectedBuild ??= identity.build;
+    if (identity.version !== index.version || identity.build !== expectedBuild) return false;
+    const current = index[platform]?.[architecture];
+    const expectedAssets = {
+      [platform === "macos" ? "dmg" : "archive"]: primary,
       manifest: publicAsset(manifest),
       signature: publicAsset(signature),
-      manifest_published_at: identity.publishedAt,
-      manifest_valid_until: identity.validUntil,
     };
+    for (const [kind, metadata] of Object.entries(expectedAssets)) {
+      if (JSON.stringify(current?.[kind]) !== JSON.stringify(metadata)) return false;
+    }
+    if (current?.manifest_published_at !== identity.publishedAt) return false;
+    if (current?.manifest_valid_until !== identity.validUntil) return false;
+  }
+  return index.build === expectedBuild;
+}
+
+function verifiedPublicationMatchesRelease() {
+  const macosInstaller = verifiedAsset(select(/^install-community-macos\.sh$/, "macOS installer"));
+  const linuxInstaller = verifiedAsset(select(/^install-linux\.sh$/, "Linux installer"));
+  validateInstaller(macosInstaller, "macos", "https://harnessharlot.com/releases/stable-macos.json");
+  validateInstaller(linuxInstaller, "linux", "https://harnessharlot.com/releases/stable-linux.json");
+  if (!localFileMatchesVerifiedAsset("public/install-macos", macosInstaller)) return false;
+  if (!localFileMatchesVerifiedAsset("public/install-linux", linuxInstaller)) return false;
+  let macos;
+  let linux;
+  try {
+    macos = JSON.parse(readFileSync("public/releases/stable-macos.json", "utf8"));
+    linux = JSON.parse(readFileSync("public/releases/stable-linux.json", "utf8"));
+  } catch {
+    return false;
+  }
+  if (!verifiedIndexMatchesRelease(macos, "macos")) return false;
+  if (!verifiedIndexMatchesRelease(linux, "linux")) return false;
+  return macos.version === linux.version && macos.build === linux.build;
+}
+
+try {
+  if (!requestedTag && verifiedPublicationMatchesRelease()) {
+    console.log(`website already publishes attestation-verified ${tag} assets`);
+  } else {
+  const macosInstaller = verifiedAsset(select(/^install-community-macos\.sh$/, "macOS installer"));
+  const linuxInstaller = verifiedAsset(select(/^install-linux\.sh$/, "Linux installer"));
+  const macosInstallerBody = validateInstaller(
+    macosInstaller,
+    "macos",
+    "https://harnessharlot.com/releases/stable-macos.json",
+  );
+  const linuxInstallerBody = validateInstaller(
+    linuxInstaller,
+    "linux",
+    "https://harnessharlot.com/releases/stable-linux.json",
+  );
+
+  const publication = { macos: {}, linux: {} };
+  let version;
+  let build;
+  for (const platform of ["macos", "linux"]) {
+    for (const architecture of ["arm64", "x86_64"]) {
+      const primary = verifiedAsset(releaseAsset(platform, architecture));
+      const manifest = verifiedAsset(releaseManifest(platform, architecture));
+      const signature = verifiedAsset(releaseSignature(platform, architecture));
+      const body = JSON.parse(readFileSync(manifest.path, "utf8"));
+      const identity = validateManifest(body, { platform, architecture, artifact: primary, tag });
+      version ??= identity.version;
+      build ??= identity.build;
+      if (identity.version !== version || identity.build !== build) {
+        throw new Error("release tag, version, or build disagree across platforms or architectures");
+      }
+      publication[platform][architecture] = {
+        [platform === "macos" ? "dmg" : "archive"]: publicAsset(primary),
+        manifest: publicAsset(manifest),
+        signature: publicAsset(signature),
+        manifest_published_at: identity.publishedAt,
+        manifest_valid_until: identity.validUntil,
+      };
+    }
   }
 
   let currentIdentity;
@@ -141,10 +204,19 @@ try {
     { allowRollback: process.env.HH_ALLOW_RELEASE_ROLLBACK === "1" },
   );
 
-  const index = { schema: "hh-web-release-index-v1", tag, version, build, macos };
-  writeFileSync("public/releases/stable-macos.json", `${JSON.stringify(index, null, 2)}\n`);
-  writeFileSync("public/install", installerBody, { mode: 0o755 });
-  console.log(`published verified ${tag} installer metadata from ${basename(installer.path)}`);
+  const common = { schema: "hh-web-release-index-v1", tag, version, build };
+  writeFileSync(
+    "public/releases/stable-macos.json",
+    `${JSON.stringify({ ...common, macos: publication.macos }, null, 2)}\n`,
+  );
+  writeFileSync(
+    "public/releases/stable-linux.json",
+    `${JSON.stringify({ ...common, linux: publication.linux }, null, 2)}\n`,
+  );
+  writeFileSync("public/install-macos", macosInstallerBody, { mode: 0o755 });
+  writeFileSync("public/install-linux", linuxInstallerBody, { mode: 0o755 });
+  console.log(`published verified ${tag} macOS and Linux installer metadata from ${basename(macosInstaller.path)} and ${basename(linuxInstaller.path)}`);
+  }
 } finally {
   rmSync(work, { recursive: true, force: true });
 }

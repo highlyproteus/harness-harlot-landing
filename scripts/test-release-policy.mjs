@@ -28,7 +28,7 @@ const manifest = {
   }],
 };
 
-assert.deepEqual(validateManifest(manifest, { architecture: "arm64", dmg, tag: "v0.1.10", now }), {
+assert.deepEqual(validateManifest(manifest, { platform: "macos", architecture: "arm64", artifact: dmg, tag: "v0.1.10", now }), {
   version: "0.1.10",
   build: 82,
   publishedAt: "2026-08-21T23:00:00Z",
@@ -53,7 +53,42 @@ for (const mutate of [
 ]) {
   const changed = structuredClone(manifest);
   mutate(changed);
-  assert.throws(() => validateManifest(changed, { architecture: "arm64", dmg, tag: "v0.1.10", now }));
+  assert.throws(() => validateManifest(changed, { platform: "macos", architecture: "arm64", artifact: dmg, tag: "v0.1.10", now }));
+}
+
+const archive = {
+  url: "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.10/Harness-Harlot-0.1.10-b82-linux-x86_64.tar.gz",
+  sha256: "b".repeat(64),
+  size: 654321,
+};
+const linuxManifest = {
+  ...structuredClone(manifest),
+  platform: "linux",
+  minimum_glibc: "2.35",
+  artifacts: [{
+    platform: "linux",
+    architecture: "x86_64",
+    format: "tar.gz",
+    file_name: "Harness-Harlot-0.1.10-b82-linux-x86_64.tar.gz",
+    ...archive,
+  }],
+};
+delete linuxManifest.minimum_macos;
+assert.deepEqual(
+  validateManifest(linuxManifest, { platform: "linux", architecture: "x86_64", artifact: archive, tag: "v0.1.10", now }),
+  { version: "0.1.10", build: 82, publishedAt: "2026-08-21T23:00:00Z", validUntil: "2026-08-29T23:00:00Z" },
+);
+for (const mutate of [
+  (body) => { body.minimum_glibc = "glibc"; },
+  (body) => { body.artifacts[0].format = "zip"; },
+  (body) => { body.artifacts[0].platform = "macos"; },
+]) {
+  const changed = structuredClone(linuxManifest);
+  mutate(changed);
+  assert.throws(() => validateManifest(
+    changed,
+    { platform: "linux", architecture: "x86_64", artifact: archive, tag: "v0.1.10", now },
+  ));
 }
 
 assert.doesNotThrow(() => assertNoRollback({ version: "0.1.9", build: 81 }, { version: "0.1.10", build: 82 }));
