@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro check && astro build",
-    "test": "node scripts/test-release-policy.mjs && node scripts/test-install-surface.mjs",
+    "test": "node scripts/test-release-policy.mjs && node scripts/test-install-surface.mjs && sh scripts/test-dispatcher.sh",
     "preview": "astro preview"
   },
   "dependencies": {

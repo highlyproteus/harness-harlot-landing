@@ -3,8 +3,7 @@ import "../styles/global.css";
 
 const repoUrl = "https://github.com/highlyproteus/harness-harlot";
 const releaseUrl = `${repoUrl}/releases/latest`;
-const macCommand = "curl --proto '=https' --tlsv1.2 -fsS https://harnessharlot.com/install | sh";
-const linuxCommand = "curl --proto '=https' --tlsv1.2 -fsSLo /tmp/hh-install-linux.sh https://github.com/highlyproteus/harness-harlot/releases/latest/download/install-linux.sh && sh /tmp/hh-install-linux.sh";
+const installCommand = "curl -fsS https://harnessharlot.com/install | sh";
 ---
 
 <!doctype html>
@@ -108,16 +107,13 @@ const linuxCommand = "curl --proto '=https' --tlsv1.2 -fsSLo /tmp/hh-install-lin
             </a>
           </div>
 
-          <div class="install-panel install-inline" data-mac-command={macCommand} data-linux-command={linuxCommand}>
+          <div class="install-panel install-inline">
             <div class="command-box">
               <div class="command-head">
-                <div class="platform-tabs" role="tablist" aria-label="Choose your platform">
-                  <button class="platform-tab is-active" type="button" role="tab" aria-selected="true" data-platform="mac">macOS</button>
-                  <button class="platform-tab" type="button" role="tab" aria-selected="false" data-platform="linux">Linux</button>
-                </div>
+                <span>macOS + Linux</span>
                 <button class="copy-button" type="button" data-copy aria-label="Copy install command">Copy</button>
               </div>
-              <code data-command>{macCommand}</code>
+              <code data-command>{installCommand}</code>
             </div>
             <p class="copy-status" data-copy-status aria-live="polite"></p>
           </div>
@@ -261,36 +257,12 @@ const linuxCommand = "curl --proto '=https' --tlsv1.2 -fsSLo /tmp/hh-install-lin
       });
 
       // install panel --------------------------------------------
-      type Platform = "mac" | "linux";
-
       function wireInstallPanel(panel: HTMLElement) {
-        const tabs = Array.from(panel.querySelectorAll<HTMLButtonElement>("[data-platform]"));
         const commandEl = panel.querySelector<HTMLElement>("[data-command]");
         const copyButton = panel.querySelector<HTMLButtonElement>("[data-copy]");
         const copyStatus = panel.querySelector<HTMLElement>("[data-copy-status]");
         if (!commandEl) return;
         const command: HTMLElement = commandEl;
-
-        const commands: Record<Platform, string> = {
-          mac: panel.dataset.macCommand ?? "",
-          linux: panel.dataset.linuxCommand ?? "",
-        };
-
-        function selectPlatform(platform: Platform) {
-          command.textContent = commands[platform];
-          tabs.forEach((tab) => {
-            const active = tab.dataset.platform === platform;
-            tab.classList.toggle("is-active", active);
-            tab.setAttribute("aria-selected", String(active));
-          });
-          if (copyStatus) copyStatus.textContent = "";
-          if (copyButton) copyButton.textContent = "Copy";
-        }
-
-        tabs.forEach((tab) => tab.addEventListener("click", () => {
-          const platform = tab.dataset.platform;
-          if (platform === "mac" || platform === "linux") selectPlatform(platform);
-        }));
 
         copyButton?.addEventListener("click", async () => {
           const value = command.textContent ?? "";

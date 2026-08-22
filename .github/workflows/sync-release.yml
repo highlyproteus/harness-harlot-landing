@@ -27,7 +27,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           node scripts/publish-latest-release.mjs
-          tar -cf publication.tar public/install public/releases/stable-macos.json
+          tar -cf publication.tar \
+            public/install \
+            public/install-macos \
+            public/install-linux \
+            public/releases/stable-macos.json \
+            public/releases/stable-linux.json
       - name: Store immutable verified publication files
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -60,18 +65,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
-          printf '%s\n' public/install public/releases/stable-macos.json > expected-files
+          printf '%s\n' \
+            public/install \
+            public/install-macos \
+            public/install-linux \
+            public/releases/stable-macos.json \
+            public/releases/stable-linux.json > expected-files
           tar -tf publication.tar > archive-files
           cmp expected-files archive-files
           tar -xf publication.tar
-          chmod 755 public/install
-          if git diff --quiet -- public/install public/releases/stable-macos.json; then
+          chmod 755 public/install public/install-macos public/install-linux
+          if git diff --quiet -- \
+            public/install public/install-macos public/install-linux \
+            public/releases/stable-macos.json public/releases/stable-linux.json; then
             echo "Website already points at the latest verified release."
             exit 0
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add public/install public/releases/stable-macos.json
+          git add \
+            public/install public/install-macos public/install-linux \
+            public/releases/stable-macos.json public/releases/stable-linux.json
           git commit -m "chore: publish latest verified Harness Harlot release"
           gh auth setup-git
           git push origin HEAD:main
