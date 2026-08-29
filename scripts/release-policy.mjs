@@ -3,6 +3,7 @@ import { basename } from "node:path";
 
 const TRUSTED_UPDATE_PUBLIC_KEYS = new Map([
   ["hh-stable-2026", "Cy/alHdZ5R7fSJEeuvqu1UXH9j5O0f34hWv4Rv8TFwo="],
+  ["hh-stable-2026-v2", "OFEgEmfSbN3rfQlA9Z59QT4Ci27E+YXB95qWNQOAHCA="],
 ]);
 const TRUSTED_KEY_IDS = new Set(TRUSTED_UPDATE_PUBLIC_KEYS.keys());
 

@@ -45,15 +45,15 @@ function releaseAsset(platform, architecture) {
 
 function releaseManifest(platform, architecture) {
   return select(
-    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}\\.update\\.json$`),
-    `${platform} ${architecture} stable manifest`,
+    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}-v2\\.update\\.json$`),
+    `${platform} ${architecture} stable-v2 manifest`,
   );
 }
 
 function releaseSignature(platform, architecture) {
   return select(
-    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}\\.update\\.json\\.sig$`),
-    `${platform} ${architecture} stable signature`,
+    new RegExp(`^manifest-${platform === "macos" ? "macos-community" : "linux"}-${architecture}-v2\\.update\\.json\\.sig$`),
+    `${platform} ${architecture} stable-v2 signature`,
   );
 }
 

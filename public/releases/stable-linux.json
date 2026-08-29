@@ -11,17 +11,17 @@
         "size": 535985858
       },
       "manifest": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-arm64.update.json",
-        "sha256": "4dd05396932f4ef765a46365f1a816be0352540f72fcfcf8ef88b60792a66798",
-        "size": 821
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-arm64-v2.update.json",
+        "sha256": "e007d2bb3522e53a1d6aa17ae54e17f7a3b4e2fc956b201505940d4e94164261",
+        "size": 824
       },
       "signature": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-arm64.update.json.sig",
-        "sha256": "abac0fa9dd34cb899b99b8eaa551d46faa85bf8a6bee68cc9a39860e55e1713a",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-arm64-v2.update.json.sig",
+        "sha256": "6f668920bb5adefab5f49fde69a532a3a8dcae5b3a6d028a6af3ab448df9b821",
         "size": 89
       },
       "manifest_published_at": "2026-08-28T22:44:56Z",
-      "manifest_valid_until": "2036-08-28T22:44:56Z"
+      "manifest_valid_until": "2026-09-04T22:44:56Z"
     },
     "x86_64": {
       "archive": {
@@ -30,17 +30,17 @@
         "size": 418627569
       },
       "manifest": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-x86_64.update.json",
-        "sha256": "69cc6c319ab97cd1a6acf07759186546a8b2b679f091b9f63e7f23e53d007adc",
-        "size": 824
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-x86_64-v2.update.json",
+        "sha256": "f8ee2794ddb42586658059406c82fc0d760c1ad5a884344b8cbb223ee6172dac",
+        "size": 827
       },
       "signature": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-x86_64.update.json.sig",
-        "sha256": "c3d9bd356d062308ab27f7620482742a8d43f633dfe1a15084fc5c3902969a2c",
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.16/manifest-linux-x86_64-v2.update.json.sig",
+        "sha256": "ade9a1f7f18469f4a865698a559f8d1dd8a7537ce2174f5bff25c5a66769ddf2",
         "size": 89
       },
       "manifest_published_at": "2026-08-28T22:44:48Z",
-      "manifest_valid_until": "2036-08-28T22:44:48Z"
+      "manifest_valid_until": "2026-09-04T22:44:48Z"
     }
   }
 }
