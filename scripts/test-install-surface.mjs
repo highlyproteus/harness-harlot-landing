@@ -41,11 +41,31 @@ assert.match(workflow, /upload-artifact@/);
 assert.match(workflow, /download-artifact@/);
 assert.match(publisher, /--signer-workflow/);
 assert.match(publisher, /--source-ref/);
-assert.equal((publisher.match(/verifyManifestSignature\(/g) ?? []).length, 2);
-assert.match(publisher, /current macOS and Linux release indexes disagree/);
-const verifiedAssetOffset = publisher.indexOf("function verifiedAsset");
-const verifiedNoOpOffset = publisher.indexOf("verifiedPublicationMatchesRelease()");
-assert.ok(verifiedAssetOffset >= 0 && verifiedNoOpOffset > verifiedAssetOffset, "no-op must run only after attestation verification is available");
+assert.match(publisher, /--source-digest/);
+assert.match(publisher, /refresh descriptor is not canonical JSON/);
+assert.match(publisher, /update manifest is not canonical JSON/);
+assert.match(publisher, /--deny-self-hosted-runners/);
+assert.match(publisher, /latestSuccessfulRefreshRun\(\)/);
+assert.match(publisher, /stable-v2-refresh/);
+assert.match(publisher, /validateRefreshDescriptor/);
+assert.match(publisher, /validateRefreshEntries/);
+assert.match(publisher, /assertRefreshMonotonic/);
+assert.match(publisher, /installerSupportsStableV2Base/);
+assert.match(publisher, /fully verified/);
+assert.match(publisher, /backward-compatible GitHub-v2/);
+const planOffset = publisher.lastIndexOf("const plan = planPublication()");
+const noOpOffset = publisher.lastIndexOf("publicationMatches(plan)");
+const writeOffset = publisher.lastIndexOf("writePublication(plan)");
+assert.ok(planOffset >= 0 && noOpOffset > planOffset && writeOffset > noOpOffset, "full verification must precede no-op and every write");
+for (const name of [
+  "manifest-macos-community-arm64-v2.update.json",
+  "manifest-macos-community-x86_64-v2.update.json",
+  "manifest-linux-arm64-v2.update.json",
+  "manifest-linux-x86_64-v2.update.json",
+]) {
+  assert.ok(workflow.includes(`public/releases/stable-v2/${name}`));
+  assert.ok(workflow.includes(`public/releases/stable-v2/${name}.sig`));
+}
 
 assert.equal(releaseIndex.schema, "hh-web-release-index-v1");
 assert.match(releaseIndex.tag, /^v[0-9]+\.[0-9]+\.[0-9]+$/);

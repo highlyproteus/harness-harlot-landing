@@ -27,12 +27,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           node scripts/publish-latest-release.mjs
-          tar -cf publication.tar \
-            public/install \
-            public/install-macos \
-            public/install-linux \
-            public/releases/stable-macos.json \
+          publication_files=(
+            public/install
+            public/install-macos
+            public/install-linux
+            public/releases/stable-macos.json
             public/releases/stable-linux.json
+          )
+          refreshed_files=(
+            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json
+            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig
+            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json
+            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig
+            public/releases/stable-v2/manifest-linux-arm64-v2.update.json
+            public/releases/stable-v2/manifest-linux-arm64-v2.update.json.sig
+            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json
+            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json.sig
+          )
+          if [[ -e public/releases/stable-v2 ]]; then
+            mapfile -t actual_refreshed_files < <(find public/releases/stable-v2 -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)
+            mapfile -t expected_refreshed_files < <(printf '%s\n' "${refreshed_files[@]}" | LC_ALL=C sort)
+            [[ "${actual_refreshed_files[*]}" == "${expected_refreshed_files[*]}" ]]
+            publication_files+=("${refreshed_files[@]}")
+          fi
+          tar -cf publication.tar "${publication_files[@]}"
       - name: Store immutable verified publication files
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -70,22 +88,38 @@ jobs:
             public/install-macos \
             public/install-linux \
             public/releases/stable-macos.json \
-            public/releases/stable-linux.json > expected-files
+            public/releases/stable-linux.json > legacy-files
+          printf '%s\n' \
+            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json \
+            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig \
+            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json \
+            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig \
+            public/releases/stable-v2/manifest-linux-arm64-v2.update.json \
+            public/releases/stable-v2/manifest-linux-arm64-v2.update.json.sig \
+            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json \
+            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json.sig > refreshed-files
           tar -tf publication.tar > archive-files
+          cp legacy-files expected-files
+          if [ "$(wc -l < archive-files)" -eq 13 ]; then
+            cat refreshed-files >> expected-files
+          else
+            [ "$(wc -l < archive-files)" -eq 5 ]
+            rm -rf public/releases/stable-v2
+          fi
           cmp expected-files archive-files
           tar -xf publication.tar
           chmod 755 public/install public/install-macos public/install-linux
-          if git diff --quiet -- \
-            public/install public/install-macos public/install-linux \
-            public/releases/stable-macos.json public/releases/stable-linux.json; then
+          mapfile -t expected_paths < expected-files
+          if git diff --quiet -- "${expected_paths[@]}" public/releases/stable-v2; then
             echo "Website already points at the latest verified release."
             exit 0
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            public/install public/install-macos public/install-linux \
-            public/releases/stable-macos.json public/releases/stable-linux.json
+          git add --pathspec-from-file=expected-files
+          if [ -e public/releases/stable-v2 ] || [ -n "$(git ls-files public/releases/stable-v2)" ]; then
+            git add -A public/releases/stable-v2
+          fi
           git commit -m "chore: publish latest verified Harness Harlot release"
           gh auth setup-git
           git push origin HEAD:main
