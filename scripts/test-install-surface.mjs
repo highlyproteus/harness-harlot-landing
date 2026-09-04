@@ -67,6 +67,42 @@ for (const name of [
   assert.ok(workflow.includes(`public/releases/stable-v2/${name}.sig`));
 }
 
+function assertManifestSource(item, alias, tag) {
+  const allowed = [
+    `https://github.com/highlyproteus/harness-harlot/releases/download/${tag}/${alias}`,
+    `https://harnessharlot.com/releases/stable-v2/${alias}`,
+  ];
+  assert.ok(allowed.includes(item.manifest.url), "unexpected manifest source");
+  assert.equal(item.signature.url, `${item.manifest.url}.sig`, "signature must match manifest source");
+}
+
+for (const platform of ["macos-community", "linux"]) {
+  for (const architecture of ["arm64", "x86_64"]) {
+    const alias = `manifest-${platform}-${architecture}-v2.update.json`;
+    const github = `https://github.com/highlyproteus/harness-harlot/releases/download/${releaseIndex.tag}/${alias}`;
+    const website = `https://harnessharlot.com/releases/stable-v2/${alias}`;
+    const entry = (url) => ({ manifest: { url }, signature: { url: `${url}.sig` } });
+    for (const valid of [github, website]) {
+      assertManifestSource(entry(valid), alias, releaseIndex.tag);
+    }
+    for (const invalid of [
+      website.replace("https:", "http:"),
+      website.replace("harnessharlot.com", "harnessharlot.com.evil.example"),
+      website.replace("harnessharlot.com/", "user@harnessharlot.com/"),
+      website.replace("stable-v2/", "other/"),
+      `${website}?override=1`,
+      `${website}#fragment`,
+      github.replace(`/download/${releaseIndex.tag}/`, "/download/wrong-tag/"),
+      website.replace(alias, "wrong-architecture.update.json"),
+    ]) {
+      assert.throws(() => assertManifestSource(entry(invalid), alias, releaseIndex.tag));
+    }
+    assert.throws(() => assertManifestSource({
+      manifest: { url: website }, signature: { url: `${github}.sig` },
+    }, alias, releaseIndex.tag));
+  }
+}
+
 assert.equal(releaseIndex.schema, "hh-web-release-index-v1");
 assert.match(releaseIndex.tag, /^v[0-9]+\.[0-9]+\.[0-9]+$/);
 assert.match(releaseIndex.version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
@@ -84,8 +120,10 @@ for (const architecture of ["arm64", "x86_64"]) {
   assert.match(item.manifest_published_at, /^\d{4}-\d{2}-\d{2}T/);
   assert.match(item.manifest_valid_until, /^\d{4}-\d{2}-\d{2}T/);
   assert.ok(Date.parse(item.manifest_valid_until) > Date.now(), `${architecture} manifest must remain valid`);
+  assertManifestSource(item, `manifest-macos-community-${architecture}-v2.update.json`, releaseIndex.tag);
+  assert.equal(item.dmg.url,
+    `https://github.com/highlyproteus/harness-harlot/releases/download/${releaseIndex.tag}/Harness-Harlot-${releaseIndex.version}-b${releaseIndex.build}-macos-${architecture}-community.dmg`);
   for (const asset of [item.dmg, item.manifest, item.signature]) {
-    assert.match(asset.url, /^https:\/\/github\.com\/highlyproteus\/harness-harlot\/releases\/download\//);
     assert.match(asset.sha256, /^[a-f0-9]{64}$/);
     assert.ok(Number.isSafeInteger(asset.size) && asset.size > 0);
   }
@@ -107,8 +145,10 @@ for (const architecture of ["arm64", "x86_64"]) {
     `manifest-linux-${architecture}-v2.update.json.sig`,
   );
   assert.ok(Date.parse(item.manifest_valid_until) > Date.now(), `${architecture} Linux manifest must remain valid`);
+  assertManifestSource(item, `manifest-linux-${architecture}-v2.update.json`, linuxReleaseIndex.tag);
+  assert.equal(item.archive.url,
+    `https://github.com/highlyproteus/harness-harlot/releases/download/${linuxReleaseIndex.tag}/Harness-Harlot-${linuxReleaseIndex.version}-b${linuxReleaseIndex.build}-linux-${architecture}.tar.gz`);
   for (const asset of [item.archive, item.manifest, item.signature]) {
-    assert.match(asset.url, /^https:\/\/github\.com\/highlyproteus\/harness-harlot\/releases\/download\//);
     assert.match(asset.sha256, /^[a-f0-9]{64}$/);
     assert.ok(Number.isSafeInteger(asset.size) && asset.size > 0);
   }
