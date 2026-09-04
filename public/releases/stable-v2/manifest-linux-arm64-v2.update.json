@@ -1,0 +1,27 @@
+{
+  "schema": "hh-update-manifest-v2",
+  "product": "Harness Harlot",
+  "channel": "stable",
+  "key_id": "hh-stable-2026-v2",
+  "version": "0.1.19",
+  "build": 146,
+  "published_at": "2026-09-04T20:36:33Z",
+  "valid_until": "2026-09-11T20:36:33Z",
+  "platform": "linux",
+  "minimum_glibc": "2.35",
+  "session_service": {
+    "protocol_version": 34,
+    "requires_quiescent_service": true
+  },
+  "artifacts": [
+    {
+      "platform": "linux",
+      "architecture": "arm64",
+      "format": "tar.gz",
+      "file_name": "Harness-Harlot-0.1.19-b146-linux-arm64.tar.gz",
+      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.19/Harness-Harlot-0.1.19-b146-linux-arm64.tar.gz",
+      "sha256": "116fbf567a65c06077d255f375a5d3a044eb28e0776c111f9ce0208a2048d5bc",
+      "size": 535991172
+    }
+  ]
+}

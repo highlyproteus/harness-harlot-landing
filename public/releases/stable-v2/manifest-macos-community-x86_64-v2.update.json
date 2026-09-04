@@ -1,0 +1,27 @@
+{
+  "schema": "hh-update-manifest-v2",
+  "product": "Harness Harlot",
+  "channel": "stable",
+  "key_id": "hh-stable-2026-v2",
+  "version": "0.1.19",
+  "build": 146,
+  "published_at": "2026-09-04T20:36:33Z",
+  "valid_until": "2026-09-11T20:36:33Z",
+  "platform": "macos",
+  "minimum_macos": "13.0",
+  "session_service": {
+    "protocol_version": 34,
+    "requires_quiescent_service": true
+  },
+  "artifacts": [
+    {
+      "platform": "macos",
+      "architecture": "x86_64",
+      "format": "dmg",
+      "file_name": "Harness-Harlot-0.1.19-b146-macos-x86_64-community.dmg",
+      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.19/Harness-Harlot-0.1.19-b146-macos-x86_64-community.dmg",
+      "sha256": "475151e4c1e321e169ef8ea8e9448bf6ab2b07f59689e25fa45c3deb1d15e8d6",
+      "size": 200289718
+    }
+  ]
+}
