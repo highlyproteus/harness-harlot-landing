@@ -12,16 +12,16 @@
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json",
-        "sha256": "7202b1a9bd0d945a886c52efafd36a18b2296a52c8e546a50f2281d2f28a3440",
+        "sha256": "c1780bf4d336ad5cdecc7eaa3e657bd4f74567d2c07a77ee3c4069d06ce1f2ec",
         "size": 835
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig",
-        "sha256": "ff362eeed7d98ab7e10350cf7501a9d21a18a7f96b238f49a7fad927c39aac50",
+        "sha256": "3c61591b9aa77d8a8c2aaee2933d6e8e5ed1b16e3fade704791748de69ac2a82",
         "size": 89
       },
-      "manifest_published_at": "2026-09-14T04:28:00Z",
-      "manifest_valid_until": "2026-09-21T04:28:00Z"
+      "manifest_published_at": "2026-09-15T04:28:31Z",
+      "manifest_valid_until": "2026-09-22T04:28:31Z"
     },
     "x86_64": {
       "dmg": {
@@ -31,16 +31,16 @@
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json",
-        "sha256": "3e8f67992f5e51a4795f3f52e91914cd88e60e4b5652b0bdb643d7526a6bb5f8",
+        "sha256": "6d79ed8b4208d6a28e743c206786e198881e5f49e76d5f2b46d675345f4de083",
         "size": 838
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig",
-        "sha256": "3980f45772506462923bf078b6b77fd6b9eb34c09748de929ff26e33c9745f63",
+        "sha256": "e60e490ac8881ccba2f537ed365f876ed92a2bafc3e791f0887d08b075e5f8cd",
         "size": 89
       },
-      "manifest_published_at": "2026-09-14T04:28:00Z",
-      "manifest_valid_until": "2026-09-21T04:28:00Z"
+      "manifest_published_at": "2026-09-15T04:28:31Z",
+      "manifest_valid_until": "2026-09-22T04:28:31Z"
     }
   }
 }
