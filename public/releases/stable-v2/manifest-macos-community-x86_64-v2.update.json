@@ -3,14 +3,14 @@
   "product": "Harness Harlot",
   "channel": "stable",
   "key_id": "hh-stable-2026-v2",
-  "version": "0.1.22",
-  "build": 177,
-  "published_at": "2026-09-25T03:13:26Z",
-  "valid_until": "2026-10-02T03:13:26Z",
+  "version": "0.1.23",
+  "build": 181,
+  "published_at": "2026-09-25T09:03:51Z",
+  "valid_until": "2026-10-02T09:03:51Z",
   "platform": "macos",
   "minimum_macos": "13.0",
   "session_service": {
-    "protocol_version": 45,
+    "protocol_version": 46,
     "requires_quiescent_service": true
   },
   "artifacts": [
@@ -18,10 +18,10 @@
       "platform": "macos",
       "architecture": "x86_64",
       "format": "dmg",
-      "file_name": "Harness-Harlot-0.1.22-b177-macos-x86_64-community.dmg",
-      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.22/Harness-Harlot-0.1.22-b177-macos-x86_64-community.dmg",
-      "sha256": "ae13d49e0fa1e27dbd98c101d53a97c2cf2164429411513b61f7e334532b8d80",
-      "size": 199762410
+      "file_name": "Harness-Harlot-0.1.23-b181-macos-x86_64-community.dmg",
+      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.23/Harness-Harlot-0.1.23-b181-macos-x86_64-community.dmg",
+      "sha256": "3b8cf53cb6a8e4540920116b41c7466c7db54eef89a4550141a874c11176b723",
+      "size": 199714225
     }
   ]
 }
