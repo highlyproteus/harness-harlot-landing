@@ -1,46 +1,46 @@
 {
   "schema": "hh-web-release-index-v1",
-  "tag": "v0.1.23",
-  "version": "0.1.23",
-  "build": 181,
+  "tag": "v0.1.24",
+  "version": "0.1.24",
+  "build": 185,
   "macos": {
     "arm64": {
       "dmg": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.23/Harness-Harlot-0.1.23-b181-macos-arm64-community.dmg",
-        "sha256": "3e3cb93c278c77627bf7c7b04fb2b6849767ca39c108b157d514d27b30957aa1",
-        "size": 187162387
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.24/Harness-Harlot-0.1.24-b185-macos-arm64-community.dmg",
+        "sha256": "997104413c87296da89baabf8c2759dfbb036d306f9da57d68fdec4be83ab5c4",
+        "size": 186800344
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json",
-        "sha256": "53e38f8a63507d9b7b63a0b0d1216692a023d5e11252d33abe31e67bc40d3b53",
+        "sha256": "b74517186fc31f7ba11fcc121bbed8f77a53ce1e84e98944e0b16f62c84f7172",
         "size": 835
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig",
-        "sha256": "995be1382fd426bab62f4ca1b1542ac9c815e551d2574ad5afe854f64e735244",
+        "sha256": "7fdaed78ef09e274f3aa85b04a4354851ad4a1f7b94816a2a0fa3834127d958d",
         "size": 89
       },
-      "manifest_published_at": "2026-09-25T09:36:51Z",
-      "manifest_valid_until": "2026-10-02T09:36:51Z"
+      "manifest_published_at": "2026-09-25T20:30:41Z",
+      "manifest_valid_until": "2026-10-02T20:30:41Z"
     },
     "x86_64": {
       "dmg": {
-        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.23/Harness-Harlot-0.1.23-b181-macos-x86_64-community.dmg",
-        "sha256": "3b8cf53cb6a8e4540920116b41c7466c7db54eef89a4550141a874c11176b723",
-        "size": 199714225
+        "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.24/Harness-Harlot-0.1.24-b185-macos-x86_64-community.dmg",
+        "sha256": "fd8b4992530cade282021e1377e6bc29ba8a2ea86ccbead03bd070c96d1cead1",
+        "size": 200775028
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json",
-        "sha256": "ab83132fc1b14391be05641f1285ac8be8de4ec33bd0ff8ecf4b6b2b9c03172a",
+        "sha256": "cc8612abfa8695a39f553cf7264406f367f3bea5f21c6add355af5fb7a55dc96",
         "size": 838
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig",
-        "sha256": "422289e5cfbbc8e00eed76d9f0ab6c30c014da6a9c50ea382eebc06992433ef7",
+        "sha256": "6f1ac3dec9f2ecbeee1c45cfe64a256fae7096a0437301aa0cfc22dbece1dd0f",
         "size": 89
       },
-      "manifest_published_at": "2026-09-25T09:36:51Z",
-      "manifest_valid_until": "2026-10-02T09:36:51Z"
+      "manifest_published_at": "2026-09-25T20:30:41Z",
+      "manifest_valid_until": "2026-10-02T20:30:41Z"
     }
   }
 }
