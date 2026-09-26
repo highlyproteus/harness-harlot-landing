@@ -3,10 +3,10 @@
   "product": "Harness Harlot",
   "channel": "stable",
   "key_id": "hh-stable-2026-v2",
-  "version": "0.1.24",
-  "build": 185,
-  "published_at": "2026-09-25T20:30:41Z",
-  "valid_until": "2026-10-02T20:30:41Z",
+  "version": "0.1.25",
+  "build": 192,
+  "published_at": "2026-09-26T09:22:09Z",
+  "valid_until": "2026-10-03T09:22:09Z",
   "platform": "linux",
   "minimum_glibc": "2.35",
   "session_service": {
@@ -18,10 +18,10 @@
       "platform": "linux",
       "architecture": "x86_64",
       "format": "tar.gz",
-      "file_name": "Harness-Harlot-0.1.24-b185-linux-x86_64.tar.gz",
-      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.24/Harness-Harlot-0.1.24-b185-linux-x86_64.tar.gz",
-      "sha256": "9a25f8b8f0501b3afa7291c0edcf32adc3748cb2390875f19a0715177dd7413b",
-      "size": 419747445
+      "file_name": "Harness-Harlot-0.1.25-b192-linux-x86_64.tar.gz",
+      "url": "https://github.com/highlyproteus/harness-harlot/releases/download/v0.1.25/Harness-Harlot-0.1.25-b192-linux-x86_64.tar.gz",
+      "sha256": "3476102a0a0e9a151a8b5b6e4d212e346e9c9d432f2c4dd8a1e42e693e08b510",
+      "size": 419768589
     }
   ]
 }
