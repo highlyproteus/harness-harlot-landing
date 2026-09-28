@@ -5,7 +5,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assertNoRollback, validateManifest, verifyManifestSignature } from "./release-policy.mjs";
 import {
-  CANONICAL_REFRESH_FILES,
   REFRESH_DESCRIPTOR,
   REFRESH_REPOSITORY,
   REFRESH_WORKFLOW,
@@ -127,11 +126,11 @@ function downloadAndVerifyRefresh() {
   if (rolling.tagName !== "stable-v2-refresh" || rolling.isDraft || !rolling.isPrerelease) {
     throw new Error("renewable stable-v2 release identity is invalid");
   }
-  validateRefreshEntries(rolling.assets.map((asset) => ({ name: asset.name, kind: "file", size: asset.size })));
+  const shape = validateRefreshEntries(rolling.assets.map((asset) => ({ name: asset.name, kind: "file", size: asset.size })));
   const byName = new Map(rolling.assets.map((asset) => [asset.name, asset]));
   const directory = join(work, "refresh");
   mkdirSync(directory, { mode: 0o700 });
-  for (const name of CANONICAL_REFRESH_FILES) {
+  for (const name of shape.files) {
     execFileSync("gh", [
       "release", "download", "stable-v2-refresh", "--repo", repository,
       "--dir", directory, "--pattern", name,
@@ -158,7 +157,7 @@ function downloadAndVerifyRefresh() {
     throw new Error("refresh descriptor is not canonical JSON");
   }
   validateRefreshDescriptor(descriptor, { run, release });
-  return directory;
+  return { directory, includesMacosX86_64: shape.includesMacosX86_64 };
 }
 
 function manifestName(platform, architecture) {
@@ -171,7 +170,15 @@ function planPublication() {
   const macosInstallerBody = validateInstaller(macosInstaller, "macos", "https://harnessharlot.com/releases/stable-macos.json");
   const linuxInstallerBody = validateInstaller(linuxInstaller, "linux", "https://harnessharlot.com/releases/stable-linux.json");
   const useRefresh = installerSupportsStableV2Base(macosInstallerBody) && installerSupportsStableV2Base(linuxInstallerBody);
-  const refreshDirectory = useRefresh ? downloadAndVerifyRefresh() : undefined;
+  const refresh = useRefresh ? downloadAndVerifyRefresh() : undefined;
+  const refreshDirectory = refresh?.directory;
+  // macOS x86_64 is retired: publish it only when the refresh carries its alias AND the release has the DMG.
+  // An alias without a DMG (or, in legacy mode, a DMG without manifests) fails in the loop below.
+  const hasMacosX86_64Dmg = [...assets.keys()].some((name) => new RegExp(`^Harness-Harlot-${releaseVersionPattern}-b[0-9]+-macos-x86_64-community\\.dmg$`).test(name));
+  const includeMacosX86_64 = hasMacosX86_64Dmg && (useRefresh ? refresh.includesMacosX86_64 : true);
+  if (useRefresh && refresh.includesMacosX86_64 && !hasMacosX86_64Dmg) {
+    throw new Error("refresh contains a macOS x86_64 manifest but the latest release has no macOS x86_64 DMG");
+  }
   const currentIndexes = readCurrentIndexes();
   const publication = { macos: {}, linux: {} };
   const refreshedFiles = new Map();
@@ -179,7 +186,7 @@ function planPublication() {
   let build;
 
   for (const platform of ["macos", "linux"]) {
-    for (const architecture of ["arm64", "x86_64"]) {
+    for (const architecture of platform === "macos" && !includeMacosX86_64 ? ["arm64"] : ["arm64", "x86_64"]) {
       const primary = verifiedReleaseAsset(releaseAsset(platform, architecture));
       const name = manifestName(platform, architecture);
       let manifest;

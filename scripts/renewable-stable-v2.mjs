@@ -4,16 +4,20 @@ export const STABLE_V2_BASE_URL = "https://harnessharlot.com/releases/stable-v2"
 export const REFRESH_DESCRIPTOR = "stable-v2-refresh.json";
 export const REFRESH_WORKFLOW = ".github/workflows/refresh-stable-v2.yml";
 export const REFRESH_REPOSITORY = "highlyproteus/harness-harlot";
-export const CANONICAL_MANIFESTS = [
+export const MACOS_X86_64_MANIFEST = "manifest-macos-community-x86_64-v2.update.json";
+// Always required: macOS arm64 and both Linux architectures.
+export const MANDATORY_MANIFESTS = [
   "manifest-macos-community-arm64-v2.update.json",
-  "manifest-macos-community-x86_64-v2.update.json",
   "manifest-linux-arm64-v2.update.json",
   "manifest-linux-x86_64-v2.update.json",
 ];
-export const CANONICAL_REFRESH_FILES = [
-  ...CANONICAL_MANIFESTS.flatMap((name) => [name, `${name}.sig`]),
-  REFRESH_DESCRIPTOR,
-];
+// The refresh publishes exactly one of two shapes: without or with the retired macOS x86_64 alias.
+export const CANONICAL_MANIFESTS = [...MANDATORY_MANIFESTS, MACOS_X86_64_MANIFEST];
+const refreshFiles = (manifests) => [...manifests.flatMap((name) => [name, `${name}.sig`]), REFRESH_DESCRIPTOR];
+export const REFRESH_FILES_WITHOUT_MACOS_X86_64 = refreshFiles(MANDATORY_MANIFESTS);
+export const REFRESH_FILES_WITH_MACOS_X86_64 = refreshFiles(CANONICAL_MANIFESTS);
+// Every path either shape may contain.
+export const CANONICAL_REFRESH_FILES = REFRESH_FILES_WITH_MACOS_X86_64;
 
 function requireValue(condition, message) {
   if (!condition) throw new Error(message);
@@ -62,10 +66,13 @@ export function validateRefreshEntries(entries) {
     const maximumSize = entry.name === REFRESH_DESCRIPTOR ? 16 * 1024 : entry.name.endsWith(".sig") ? 4 * 1024 : 1024 * 1024;
     requireValue(Number.isSafeInteger(entry.size) && entry.size > 0 && entry.size <= maximumSize, `refresh artifact file has invalid size: ${entry.name}`);
   }
-  requireValue(entries.length === CANONICAL_REFRESH_FILES.length, "refresh artifact has missing or extra paths");
-  for (const expected of CANONICAL_REFRESH_FILES) {
+  const includesMacosX86_64 = names.has(MACOS_X86_64_MANIFEST) || names.has(`${MACOS_X86_64_MANIFEST}.sig`);
+  const expectedFiles = includesMacosX86_64 ? REFRESH_FILES_WITH_MACOS_X86_64 : REFRESH_FILES_WITHOUT_MACOS_X86_64;
+  requireValue(entries.length === expectedFiles.length, "refresh artifact has missing or extra paths");
+  for (const expected of expectedFiles) {
     requireValue(names.has(expected), `refresh artifact is missing canonical path: ${expected}`);
   }
+  return { includesMacosX86_64, files: [...expectedFiles] };
 }
 
 export function installerSupportsStableV2Base(body) {

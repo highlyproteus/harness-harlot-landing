@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import {
-  CANONICAL_REFRESH_FILES,
+  MACOS_X86_64_MANIFEST,
+  REFRESH_FILES_WITHOUT_MACOS_X86_64,
+  REFRESH_FILES_WITH_MACOS_X86_64,
   STABLE_V2_BASE_URL,
   assertRefreshMonotonic,
   buildRefreshedAssetMetadata,
@@ -59,18 +61,36 @@ for (const changedRun of [
   assert.throws(() => validateRefreshDescriptor(descriptor, { run: changedRun, release }));
 }
 
-const entries = CANONICAL_REFRESH_FILES.map((name) => ({ name, kind: "file", size: 100 }));
-assert.doesNotThrow(() => validateRefreshEntries(entries));
-for (const [label, changed] of [
-  ["missing", entries.slice(1)],
-  ["extra", [...entries, { name: "unexpected", kind: "file", size: 1 }]],
-  ["duplicate", [...entries, entries[0]]],
-  ["link", entries.map((entry, index) => index ? entry : { ...entry, kind: "symlink" })],
-  ["directory", entries.map((entry, index) => index ? entry : { ...entry, kind: "directory" })],
-  ["nested", entries.map((entry, index) => index ? entry : { ...entry, name: `nested/${entry.name}` })],
-  ["oversized", entries.map((entry, index) => index ? entry : { ...entry, size: 2 * 1024 * 1024 })],
-]) {
-  assert.throws(() => validateRefreshEntries(changed), undefined, label);
+const toEntries = (names) => names.map((name) => ({ name, kind: "file", size: 100 }));
+assert.equal(REFRESH_FILES_WITHOUT_MACOS_X86_64.length, 7);
+assert.equal(REFRESH_FILES_WITH_MACOS_X86_64.length, 9);
+assert.equal(validateRefreshEntries(toEntries(REFRESH_FILES_WITH_MACOS_X86_64)).includesMacosX86_64, true);
+assert.equal(validateRefreshEntries(toEntries(REFRESH_FILES_WITHOUT_MACOS_X86_64)).includesMacosX86_64, false);
+for (const [shape, names] of [["4-alias", REFRESH_FILES_WITH_MACOS_X86_64], ["3-alias", REFRESH_FILES_WITHOUT_MACOS_X86_64]]) {
+  const entries = toEntries(names);
+  for (const [label, changed] of [
+    ["missing", entries.slice(1)],
+    ["missing descriptor", entries.filter((entry) => entry.name !== "stable-v2-refresh.json")],
+    ["extra", [...entries, { name: "unexpected", kind: "file", size: 1 }]],
+    ["duplicate", [...entries, entries[0]]],
+    ["link", entries.map((entry, index) => index ? entry : { ...entry, kind: "symlink" })],
+    ["directory", entries.map((entry, index) => index ? entry : { ...entry, kind: "directory" })],
+    ["nested", entries.map((entry, index) => index ? entry : { ...entry, name: `nested/${entry.name}` })],
+    ["oversized", entries.map((entry, index) => index ? entry : { ...entry, size: 2 * 1024 * 1024 })],
+  ]) {
+    assert.throws(() => validateRefreshEntries(changed), undefined, `${shape} ${label}`);
+  }
+}
+// Intel alias must come with its signature and never alone.
+const withoutIntelSig = REFRESH_FILES_WITH_MACOS_X86_64.filter((name) => name !== `${MACOS_X86_64_MANIFEST}.sig`);
+assert.throws(() => validateRefreshEntries(toEntries(withoutIntelSig)), /missing or extra|missing canonical/);
+const intelSigOnly = REFRESH_FILES_WITHOUT_MACOS_X86_64.concat(`${MACOS_X86_64_MANIFEST}.sig`);
+assert.throws(() => validateRefreshEntries(toEntries(intelSigOnly)), /missing or extra|missing canonical/);
+// Mandatory platforms cannot be dropped in either shape.
+for (const mandatory of ["manifest-macos-community-arm64-v2.update.json", "manifest-linux-arm64-v2.update.json.sig", "manifest-linux-x86_64-v2.update.json"]) {
+  for (const names of [REFRESH_FILES_WITH_MACOS_X86_64, REFRESH_FILES_WITHOUT_MACOS_X86_64]) {
+    assert.throws(() => validateRefreshEntries(toEntries(names.filter((name) => name !== mandatory))));
+  }
 }
 
 const fixtureManifestBytes = await readFile(new URL("./fixtures/stable-v2/manifest-linux-arm64-v2.update.json", import.meta.url));
