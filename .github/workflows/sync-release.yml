@@ -34,21 +34,30 @@ jobs:
             public/releases/stable-macos.json
             public/releases/stable-linux.json
           )
-          refreshed_files=(
-            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json
-            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig
-            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json
-            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig
-            public/releases/stable-v2/manifest-linux-arm64-v2.update.json
-            public/releases/stable-v2/manifest-linux-arm64-v2.update.json.sig
-            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json
-            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json.sig
+          v2=public/releases/stable-v2
+          refreshed_files_without_intel=(
+            $v2/manifest-macos-community-arm64-v2.update.json
+            $v2/manifest-macos-community-arm64-v2.update.json.sig
+            $v2/manifest-linux-arm64-v2.update.json
+            $v2/manifest-linux-arm64-v2.update.json.sig
+            $v2/manifest-linux-x86_64-v2.update.json
+            $v2/manifest-linux-x86_64-v2.update.json.sig
           )
-          if [[ -e public/releases/stable-v2 ]]; then
-            mapfile -t actual_refreshed_files < <(find public/releases/stable-v2 -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)
-            mapfile -t expected_refreshed_files < <(printf '%s\n' "${refreshed_files[@]}" | LC_ALL=C sort)
-            [[ "${actual_refreshed_files[*]}" == "${expected_refreshed_files[*]}" ]]
-            publication_files+=("${refreshed_files[@]}")
+          refreshed_files_with_intel=(
+            "${refreshed_files_without_intel[@]}"
+            $v2/manifest-macos-community-x86_64-v2.update.json
+            $v2/manifest-macos-community-x86_64-v2.update.json.sig
+          )
+          if [[ -e $v2 ]]; then
+            actual_refreshed_files=$(find $v2 -mindepth 1 -maxdepth 1 -print | LC_ALL=C sort)
+            without_intel=$(printf '%s\n' "${refreshed_files_without_intel[@]}" | LC_ALL=C sort)
+            with_intel=$(printf '%s\n' "${refreshed_files_with_intel[@]}" | LC_ALL=C sort)
+            if [[ "$actual_refreshed_files" == "$with_intel" ]]; then
+              publication_files+=("${refreshed_files_with_intel[@]}")
+            else
+              [[ "$actual_refreshed_files" == "$without_intel" ]]
+              publication_files+=("${refreshed_files_without_intel[@]}")
+            fi
           fi
           tar -cf publication.tar "${publication_files[@]}"
       - name: Store immutable verified publication files
@@ -89,23 +98,26 @@ jobs:
             public/install-linux \
             public/releases/stable-macos.json \
             public/releases/stable-linux.json > legacy-files
+          v2=public/releases/stable-v2
           printf '%s\n' \
-            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json \
-            public/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig \
-            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json \
-            public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig \
-            public/releases/stable-v2/manifest-linux-arm64-v2.update.json \
-            public/releases/stable-v2/manifest-linux-arm64-v2.update.json.sig \
-            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json \
-            public/releases/stable-v2/manifest-linux-x86_64-v2.update.json.sig > refreshed-files
+            $v2/manifest-macos-community-arm64-v2.update.json \
+            $v2/manifest-macos-community-arm64-v2.update.json.sig \
+            $v2/manifest-linux-arm64-v2.update.json \
+            $v2/manifest-linux-arm64-v2.update.json.sig \
+            $v2/manifest-linux-x86_64-v2.update.json \
+            $v2/manifest-linux-x86_64-v2.update.json.sig > refreshed-files-without-intel
+          printf '%s\n' \
+            $v2/manifest-macos-community-x86_64-v2.update.json \
+            $v2/manifest-macos-community-x86_64-v2.update.json.sig > refreshed-files-intel
           tar -tf publication.tar > archive-files
           cp legacy-files expected-files
-          if [ "$(wc -l < archive-files)" -eq 13 ]; then
-            cat refreshed-files >> expected-files
-          else
-            [ "$(wc -l < archive-files)" -eq 5 ]
-            rm -rf public/releases/stable-v2
-          fi
+          case "$(wc -l < archive-files)" in
+            13) cat refreshed-files-without-intel refreshed-files-intel >> expected-files ;;
+            11) cat refreshed-files-without-intel >> expected-files
+                xargs rm -f < refreshed-files-intel ;;
+            5) rm -rf public/releases/stable-v2 ;;
+            *) echo "unexpected publication file count" >&2; exit 1 ;;
+          esac
           cmp expected-files archive-files
           tar -xf publication.tar
           chmod 755 public/install public/install-macos public/install-linux

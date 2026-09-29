@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 
 const installer = await readFile(new URL("../public/install", import.meta.url), "utf8");
@@ -63,9 +64,16 @@ for (const name of [
   "manifest-linux-arm64-v2.update.json",
   "manifest-linux-x86_64-v2.update.json",
 ]) {
-  assert.ok(workflow.includes(`public/releases/stable-v2/${name}`));
-  assert.ok(workflow.includes(`public/releases/stable-v2/${name}.sig`));
+  assert.ok(workflow.includes(`$v2/${name}`));
+  assert.ok(workflow.includes(`$v2/${name}.sig`));
 }
+// The workflow allows exactly two stable-v2 sets: 6 files (3 aliases) or 8 files (4 aliases).
+assert.match(workflow, /refreshed_files_without_intel/);
+assert.match(workflow, /refreshed_files_with_intel/);
+assert.match(workflow, /13\) cat refreshed-files-without-intel refreshed-files-intel/);
+assert.match(workflow, /11\) cat refreshed-files-without-intel/);
+assert.match(workflow, /5\) rm -rf public\/releases\/stable-v2/);
+assert.match(page, /Requires a Mac with Apple silicon/);
 
 function assertManifestSource(item, alias, tag) {
   const allowed = [
@@ -106,9 +114,11 @@ for (const platform of ["macos-community", "linux"]) {
 assert.equal(releaseIndex.schema, "hh-web-release-index-v1");
 assert.match(releaseIndex.tag, /^v[0-9]+\.[0-9]+\.[0-9]+$/);
 assert.match(releaseIndex.version, /^[0-9]+\.[0-9]+\.[0-9]+$/);
-for (const architecture of ["arm64", "x86_64"]) {
+// macOS x86_64 is optional (retired from 0.1.28); arm64 is mandatory.
+assert.ok(releaseIndex.macos.arm64, "missing arm64 release");
+for (const architecture of Object.keys(releaseIndex.macos)) {
+  assert.ok(["arm64", "x86_64"].includes(architecture), `unexpected macOS architecture ${architecture}`);
   const item = releaseIndex.macos[architecture];
-  assert.ok(item, `missing ${architecture} release`);
   assert.equal(
     new URL(item.manifest.url).pathname.split("/").at(-1),
     `manifest-macos-community-${architecture}-v2.update.json`,
@@ -127,6 +137,11 @@ for (const architecture of ["arm64", "x86_64"]) {
     assert.match(asset.sha256, /^[a-f0-9]{64}$/);
     assert.ok(Number.isSafeInteger(asset.size) && asset.size > 0);
   }
+}
+
+if (!releaseIndex.macos.x86_64) {
+  assert.ok(!existsSync(new URL("../public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json", import.meta.url)), "stale macOS x86_64 manifest must not be published");
+  assert.ok(!existsSync(new URL("../public/releases/stable-v2/manifest-macos-community-x86_64-v2.update.json.sig", import.meta.url)), "stale macOS x86_64 signature must not be published");
 }
 
 assert.equal(linuxReleaseIndex.schema, "hh-web-release-index-v1");
