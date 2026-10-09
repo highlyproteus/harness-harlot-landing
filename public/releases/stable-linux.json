@@ -12,16 +12,16 @@
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-linux-arm64-v2.update.json",
-        "sha256": "2261fb393e1167b442cb94fbfcc652e00faafbbc79b7102932a4bd1963717a60",
+        "sha256": "9191ac5b044389f49d6da96ed82e25a450e9e59171070e5917a9eb3324d743ba",
         "size": 824
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-linux-arm64-v2.update.json.sig",
-        "sha256": "0ee88e3ae17ca8b6e7529e04613351737d4fef3b1a2fc0ed4f4ebc932f91217f",
+        "sha256": "204e0c829fee55e989b4b6dddcf3a6568610e834861cf565b45c5ebc92b70bc2",
         "size": 89
       },
-      "manifest_published_at": "2026-10-08T11:22:12Z",
-      "manifest_valid_until": "2026-10-15T11:22:12Z"
+      "manifest_published_at": "2026-10-09T11:19:43Z",
+      "manifest_valid_until": "2026-10-16T11:19:43Z"
     },
     "x86_64": {
       "archive": {
@@ -31,16 +31,16 @@
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-linux-x86_64-v2.update.json",
-        "sha256": "ad5994946e4586e90e766ba90e9d1583104ebdb6e9160cc62e1e44897c6b1147",
+        "sha256": "21edc3cf36557fe0250280b9e7af61cc5f3136667de36ad2785d19651203215e",
         "size": 827
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-linux-x86_64-v2.update.json.sig",
-        "sha256": "235250c8abf1a14fcf9b57ceff11758e1761448d79b9ef82c8808fd8a16a019c",
+        "sha256": "c6e3b860256e9084478394fd590523b9e80079ec8e3ad2e54521cf9415b4a09d",
         "size": 89
       },
-      "manifest_published_at": "2026-10-08T11:22:12Z",
-      "manifest_valid_until": "2026-10-15T11:22:12Z"
+      "manifest_published_at": "2026-10-09T11:19:43Z",
+      "manifest_valid_until": "2026-10-16T11:19:43Z"
     }
   }
 }
