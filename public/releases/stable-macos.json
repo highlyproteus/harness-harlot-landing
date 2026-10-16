@@ -12,16 +12,16 @@
       },
       "manifest": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json",
-        "sha256": "7e5a43863ae95bc04321cf3e243165a78e200f0e7d51a609189ae8a67c163d74",
+        "sha256": "2dea19711d3f64fea26b4af96ae05399c3cf87f19340809e412cac47e4b72a5a",
         "size": 835
       },
       "signature": {
         "url": "https://harnessharlot.com/releases/stable-v2/manifest-macos-community-arm64-v2.update.json.sig",
-        "sha256": "a7b86f777c10d380eb550b98bdb201e0035a9409c7ecef26cc8275c76bf705f3",
+        "sha256": "8ac42aba55e55317ceff1529d78aadc38f5e3188fcf615da3f5f4a140135a3a8",
         "size": 89
       },
-      "manifest_published_at": "2026-10-15T09:09:20Z",
-      "manifest_valid_until": "2026-10-22T09:09:20Z"
+      "manifest_published_at": "2026-10-16T09:01:22Z",
+      "manifest_valid_until": "2026-10-23T09:01:22Z"
     }
   }
 }
