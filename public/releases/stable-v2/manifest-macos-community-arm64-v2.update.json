@@ -5,8 +5,8 @@
   "key_id": "hh-stable-2026-v2",
   "version": "0.1.27",
   "build": 216,
-  "published_at": "2026-10-16T09:01:22Z",
-  "valid_until": "2026-10-23T09:01:22Z",
+  "published_at": "2026-10-17T08:33:15Z",
+  "valid_until": "2026-10-24T08:33:15Z",
   "platform": "macos",
   "minimum_macos": "13.0",
   "session_service": {
