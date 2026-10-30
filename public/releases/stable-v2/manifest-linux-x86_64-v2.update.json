@@ -5,8 +5,8 @@
   "key_id": "hh-stable-2026-v2",
   "version": "0.1.27",
   "build": 216,
-  "published_at": "2026-10-29T10:53:47Z",
-  "valid_until": "2026-11-05T10:53:47Z",
+  "published_at": "2026-10-30T10:51:51Z",
+  "valid_until": "2026-11-06T10:51:51Z",
   "platform": "linux",
   "minimum_glibc": "2.35",
   "session_service": {
